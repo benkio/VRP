@@ -15,3 +15,9 @@ calculatePathDistance :: [Coordinate] -> Float
 calculatePathDistance [] = 0
 calculatePathDistance (x:y:xs) = (calculateDistance x y) + calculatePathDistance (y:xs)
 calculatePathDistance (_:[]) = 0
+
+calculateDemand :: [Demand] -> Int
+calculateDemand x = foldr (+) 0 x
+
+pathIsValid :: Int -> [Demand] -> Bool
+pathIsValid x y = (calculateDemand y) < x

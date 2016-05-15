@@ -7,3 +7,4 @@ type VRPFileLine    = String
 type Coordinate  = (Int,Int)
 type Demand      = Int
 type Node        = (Coordinate, Demand)
+type Path        = [Node]
