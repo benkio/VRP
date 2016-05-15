@@ -19,7 +19,9 @@ executable VRP
   ghc-options:         -Wall
   main-is:             Main.hs
   other-modules:       DataParsing.VrpTxtParse,
-                       Errors
+                       Errors,
+                       Domain,
+                       Behaviour.NodeAndPathCalculator
   -- other-extensions:
   build-depends:       base >=4.8 && <4.9,
                        matrix
