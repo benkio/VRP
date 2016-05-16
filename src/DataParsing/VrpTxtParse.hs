@@ -48,7 +48,7 @@ numberOfNodes :: VRPFileContent -> Int
 numberOfNodes c = readElementFromFile c 0 xLineIndex
 
 vehiclesCapacity :: VRPFileContent -> Int
-vehiclesCapacity c = readElementFromFile c 0 yLineIndex
+vehiclesCapacity c = readElementFromFile c 0 2
 
 startingPoint :: VRPFileContent -> Coordinate
 startingPoint c = ((getXCoordinate c 1), (getYCoordinate c 1))

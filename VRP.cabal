@@ -21,9 +21,12 @@ executable VRP
   other-modules:       DataParsing.VrpTxtParse,
                        Errors,
                        Domain,
-                       Behaviour.NodeAndPathCalculator
+                       Behaviour.NodeAndPathCalculator,
+                       Behaviour.Genetics.Algorithm
   -- other-extensions:
   build-depends:       base >=4.8 && <4.9,
-                       matrix
+                       random-fu,
+                       random,
+                       random-extras >=0.19
   hs-source-dirs:      src
   default-language:    Haskell2010

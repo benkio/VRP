@@ -2,6 +2,7 @@ module Main where
 
 import DataParsing.VrpTxtParse --add to force compilation
 import Behaviour.NodeAndPathCalculator
+import Behaviour.Genetics.Algorithm
 
 main :: IO()
 main = do
