@@ -63,7 +63,11 @@ generateRandomPath nodes False _ n veicleCapacity = if (n==100)
                                          s <- shuffle nodes
                                          generateRandomPath nodes (validator veicleCapacity s) s (n+1) veicleCapacity)
 
--- Use the previous function to generate a fixed number of random paths
+{-
+    Use the previous function to generate a fixed number of random paths
+    It tries indefinitely CANNOT RETURN IF THE NUMBER OF PATH CANNOT BE GENERATED.
+    the return avoid duplications and empty strings
+-}
 generateRandomPaths :: (Eq a, Num a) => a -> [Path] -> [Node] -> Int -> RVar [Path]
 generateRandomPaths 0 acc _ _ = return acc
 generateRandomPaths n acc nodes veicleCapacity = do
