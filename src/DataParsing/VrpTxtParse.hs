@@ -1,8 +1,11 @@
 module DataParsing.VrpTxtParse where
 
--- This file will try to parse a txt for the vrp problem from
--- http://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/
+{-
+    This file will try to parse a txt for the vrp problem from
+    http://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/
 
+    All the data can be easely estracted with the following functions
+-}
 import Errors
 import Domain
 

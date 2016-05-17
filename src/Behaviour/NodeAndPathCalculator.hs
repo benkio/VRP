@@ -2,6 +2,11 @@ module Behaviour.NodeAndPathCalculator where
 
 import Domain
 
+{-
+    In this file there're the functions that compute Nodes and Paths
+    But not strictly releated with the algorith of solving.
+-}
+
 pow :: Num x => x -> x
 pow x = x * x
 

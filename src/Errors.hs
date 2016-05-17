@@ -1,5 +1,9 @@
 module Errors where
 
+{-
+    Custom datatypes for the errors
+-}
+
 data CustomError = NegativeIndex
                  | MiscError String
                  | UnexpectedInput
