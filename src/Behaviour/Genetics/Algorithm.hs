@@ -1,9 +1,9 @@
 module Behaviour.Genetics.Algorithm where
 
 import Domain
-import System.Random
 import Data.Random
 import Data.Random.RVar
+import System.Random
 import Data.List
 import Behaviour.NodeAndPathCalculator
 
@@ -18,19 +18,24 @@ generateValidPopulation xs vc gen = [ b | b <- gen xs,
 validPopulation :: [Node] -> Int -> [Path]
 validPopulation xs vc = generateValidPopulation xs vc permutations
 
-generateRandomPath :: [Node] -> RVar Path
-generateRandomPath xs = shuffle xs
+generateRandomPath :: [Node] -> Bool -> Path -> Int -> Int -> RVar Path
+generateRandomPath _ True x _ _ = return x
+generateRandomPath [] _ _ _ _ = return []
+generateRandomPath xs False _ n vc = if (n==100)
+                                     then
+                                       generateRandomPath (tail xs) False [] 0 vc
+                                     else
+                                       (do
+                                         s <- shuffle xs
+                                         generateRandomPath xs (validator vc s) s (n+1) vc)
 
-generateRandomPaths :: (Eq a, Num a) => a -> [Path] -> [Node] -> RVar [Path]
-generateRandomPaths 0 acc _ = return acc
-generateRandomPaths n acc xs = do
-                            v <- generateRandomPath xs
-                            generateRandomPaths (n-1) (v : acc) xs
+generateRandomPaths :: (Eq a, Num a) => a -> [Path] -> [Node] -> Int -> RVar [Path]
+generateRandomPaths 0 acc _ _ = return acc
+generateRandomPaths n acc xs vc = do
+                            v <- generateRandomPath xs False [] 0 vc
+                            generateRandomPaths (n-1) (v : acc) xs vc
 
-generateInitialPopulation :: MonadRandom m => [Node] -> Int -> Int -> [Path] -> m [Path]
-generateInitialPopulation _ 0 _ acc = return acc
-generateInitialPopulation xs n vc acc = do
-                                          paths <- (runRVar (generateRandomPaths n [] xs) StdRandom)
-                                          generateInitialPopulation xs (n - (length (pathFiltered paths))) vc ((pathFiltered paths)  ++ acc)
-                                          where
-                                            pathFiltered xs = filter (validator vc) (foldr (:) [] xs)
+printRVar :: (Show a) => RVar a -> IO ()
+printRVar a = do
+                b <- runRVar a StdRandom
+                print b

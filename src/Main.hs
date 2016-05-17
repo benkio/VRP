@@ -7,4 +7,4 @@ import Behaviour.Genetics.Algorithm
 main :: IO()
 main = do
   fileContent <- readSingleFile $ head $ getInstanceFiles $ 0
-  print fileContent -- (readElementFromFile fileContent 0 0)
+  printRVar (generateRandomPaths 3 [] (nodes fileContent) 10)
