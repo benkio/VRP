@@ -8,18 +8,7 @@ module DataParsing.VrpTxtParse where
 -}
 import Errors
 import Domain
-
-filesBasePath :: VRPFilePath
-filesBasePath = "/home/benkio/projects/VRP/files/"
-
-xLineIndex :: Int
-xLineIndex = 0
-
-yLineIndex :: Int
-yLineIndex = 1
-
-demandLineIndex :: Int
-demandLineIndex = 2
+import Parameters
 
 getFileNames :: Int -> Either CustomError [VRPFileName]
 getFileNames x | x > 0 = Right $ ("vrpnc"++ (show x) ++".txt") : ( getInstanceFiles (x-1))

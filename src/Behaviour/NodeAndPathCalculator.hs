@@ -26,3 +26,9 @@ calculateDemand x = foldr (+) 0 x
 
 pathIsValid :: Int -> [Demand] -> Bool
 pathIsValid x y = (calculateDemand y) < x
+
+fitness :: [Path] -> [Float]
+fitness paths = map (\x -> calculatePathDistance (map fst x)) paths
+
+totalFitness :: [Path] -> Float
+totalFitness paths = foldr (+) 0 $ fitness $ paths

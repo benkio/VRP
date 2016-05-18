@@ -22,11 +22,13 @@ executable VRP
                        Errors,
                        Domain,
                        Behaviour.NodeAndPathCalculator,
-                       Behaviour.Genetics.Algorithm
+                       Behaviour.Genetics.Algorithm,
+                       Parameters
   -- other-extensions:
   build-depends:       base >=4.8 && <4.9,
                        random-fu,
                        random,
-                       random-extras >=0.19
+                       random-extras >=0.19,
+                       MissingH
   hs-source-dirs:      src
   default-language:    Haskell2010

@@ -10,6 +10,7 @@ import Data.Random.RVar
 import System.Random
 import Data.List
 import Behaviour.NodeAndPathCalculator
+import Control.Monad
 
 {-------------------------------------------------------------------------------------
 
@@ -18,14 +19,24 @@ import Behaviour.NodeAndPathCalculator
 --------------------------------------------------------------------------------------}
 
 
-printRVar :: (Show a) => RVar a -> IO ()
-printRVar a = do
+unwrapRVar :: RVar a -> IO a
+unwrapRVar a = do
                 b <- runRVar a StdRandom
-                print b
+                return b
+
+printRVar :: (Show a) => RVar a -> IO ()
+printRVar a =
+  do
+    b <- unwrapRVar a
+    print b
 
 -- Check if the given Path is valid or not
 validator :: Int -> Path -> Bool
 validator veicleCapacity nodes = (pathIsValid veicleCapacity (map snd nodes)) && nodes/=[]
+
+-- Return a random from 0.0 to Max (float)
+rand :: Float -> IO Float
+rand x = newStdGen >>= return . fst . randomR (0.0,x)
 
 {-------------------------------------------------------------------------------------
 
@@ -75,3 +86,50 @@ generateRandomPaths n acc nodes veicleCapacity = do
                             if v `elem` acc
                             then generateRandomPaths n acc nodes veicleCapacity
                             else generateRandomPaths (n-1) (v:acc) nodes veicleCapacity
+
+
+{--------------------------------------------------------------------------------------
+
+                         MONTECARLO EXTRACTION FUNCITONS
+
+ ---------------------------------------------------------------------------------------}
+
+{-
+     Do a montecarlo selection on the input population and return a new population
+-}
+singleMontecarloExtraction :: [Path] -> IO Path
+singleMontecarloExtraction paths =
+  do
+    r <- rand $ totalFitness paths
+    return $ montecarloPick paths r
+
+
+
+montecarlo :: [Path] -> Int -> IO [ Path]
+montecarlo x y = sequence $ f x y
+                 where
+                   f _ 0 = do []
+                   f paths n = singleMontecarloExtraction paths : f paths (n-1)
+
+
+{-
+    From the input population fitness return a list of ranges from 1 to the total fitness
+-}
+montecarloRages :: [Path] -> Float -> [Float]
+montecarloRages [] _ = []
+montecarloRages paths acc = x : montecarloRages (tail paths) x
+                                where
+                                  x = (acc + head (fitness paths))
+
+montecarloPick :: [Path] -> Float -> Path
+montecarloPick paths randomIndex =
+  let
+    ranges = montecarloRages paths 0
+  in
+    f randomIndex (zip paths ranges)
+  where
+    f :: Float -> [(Path,Float)] -> Path
+    f pick ziplist =
+      if ((snd (head ziplist)) > pick)
+      then fst (head ziplist)
+      else f pick (tail ziplist)
