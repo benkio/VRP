@@ -11,6 +11,7 @@ import System.Random
 import Data.List
 import Behaviour.NodeAndPathCalculator
 import Control.Monad
+import Parameters
 
 {-------------------------------------------------------------------------------------
 
@@ -37,6 +38,9 @@ validator veicleCapacity nodes = (pathIsValid veicleCapacity (map snd nodes)) &&
 -- Return a random from 0.0 to Max (float)
 rand :: Float -> IO Float
 rand x = newStdGen >>= return . fst . randomR (0.0,x)
+
+randList :: Float -> Int -> IO [Float]
+randList x y = sequence $ map (\_ -> rand x) [1..y]
 
 {-------------------------------------------------------------------------------------
 
@@ -133,3 +137,36 @@ montecarloPick paths randomIndex =
       if ((snd (head ziplist)) > pick)
       then fst (head ziplist)
       else f pick (tail ziplist)
+
+{--------------------------------------------------------------------------------------
+
+                                CROSSOVER FUNCTIONS
+
+---------------------------------------------------------------------------------------}
+
+pathPairBuilder :: Path -> [Path] -> [(Path,Path)]
+pathPairBuilder x [] = []
+pathPairBuilder x (z:zs) = if (x == z)
+                           then pathPairBuilder x zs
+                           else (x,z) : pathPairBuilder x zs
+
+pathPair :: [Path] -> [(Path,Path)]
+pathPair xs = concatMap (\y -> pathPairBuilder y xs) xs
+
+selectPairByFloat :: [Float] -> [(Path,Path)] -> [(Path,Path)] -> [(Path,Path)]
+selectPairByFloat _ [] acc = acc
+selectPairByFloat [] _ acc = acc
+selectPairByFloat (x:xs) (y:ys) acc = if (x >= crossoverProbability)
+                                      then selectPairByFloat xs ys (y : acc)
+                                      else selectPairByFloat xs ys acc
+
+selectForCrossOver :: [Path] -> IO [(Path, Path)]
+selectForCrossOver [] = return []
+selectForCrossOver xs =
+  let
+    pairs = pathPair xs
+  in
+    do
+      r <- randList 1.0 (length pairs)
+      print r
+      return (selectPairByFloat r (pairs) [])

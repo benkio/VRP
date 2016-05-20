@@ -17,8 +17,16 @@ main = do
   pop <- unwrapRVar $ generateRandomPaths populationNumber [] (nodes fileContent) (vehiclesCapacity fileContent)
   prettyPrintPathList pop
   pressKeyToContinue
+  print("montecarlo Selection")
   m <- montecarlo pop populationNumber
   prettyPrintPathList m
+  pressKeyToContinue
+  print("all pairs")
+  prettyPrintPathPairs (pathPair m)
+  pressKeyToContinue
+  print("crossover")
+  c <- selectForCrossOver m
+  prettyPrintPathPairs c
   pressKeyToContinue
 
 pressKeyToContinue :: IO ()
@@ -28,13 +36,22 @@ pressKeyToContinue =
     getChar
     return ()
 
-prettyPrintPathList :: [Path] -> IO ()
+prettyPrintPathList :: (Show a) => [a] -> IO ()
 prettyPrintPathList paths =
   let
     input = show paths
   in
    putStr (
-    replace "[[" "[\n[" (
-        replace "]]" "]\n]" (
-            replace "],[" "],\n[" input )))
+    replace "[[" "[\n  [" (
+        replace "]]" "]\n  ]" (
+            replace "],[" "],\n  [" input )))
 
+prettyPrintPathPairs :: (Show a) => [(a,a)] -> IO ()
+prettyPrintPathPairs paths =
+  let
+    input = show paths
+  in
+   putStr (
+    replace "[([" "[\n  (\n    [" (
+        replace "])]" "\n    ]\n  )\n]" (
+            replace "]),([" "]\n  ),\n  (\n    [" input )))

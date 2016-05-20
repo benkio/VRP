@@ -28,4 +28,8 @@ yLineIndex = 1
 demandLineIndex :: Int
 demandLineIndex = 2
 
-
+{-------------------------------
+        Algorithm Parameters
+---------------------------------}
+crossoverProbability :: Float
+crossoverProbability = 0.6
