@@ -19,12 +19,13 @@ import Parameters
 
 --------------------------------------------------------------------------------------}
 
-
+-- Unwrap the Monad and print return it's content as IO Monad
 unwrapRVar :: RVar a -> IO a
 unwrapRVar a = do
                 b <- runRVar a StdRandom
                 return b
 
+-- unwrapRVar and print It
 printRVar :: (Show a) => RVar a -> IO ()
 printRVar a =
   do
@@ -36,11 +37,18 @@ validator :: Int -> Path -> Bool
 validator veicleCapacity nodes = (pathIsValid veicleCapacity (map snd nodes)) && nodes/=[]
 
 -- Return a random from 0.0 to Max (float)
-rand :: Float -> IO Float
-rand x = newStdGen >>= return . fst . randomR (0.0,x)
+rand :: (Random a) => a -> a -> IO a
+rand x y = newStdGen >>= return . fst . randomR (x,y)
 
-randList :: Float -> Int -> IO [Float]
-randList x y = sequence $ map (\_ -> rand x) [1..y]
+-- Generate a Random List of length z of values between x and y
+randList :: (Random a) => a -> a -> Int -> IO [a]
+randList x y z = sequence $ map (\_ -> rand x y) [1..z]
+
+-- return the shortes list length
+getShorterLength :: [a] -> [a] -> Int
+getShorterLength xs ys = if (length xs < length ys)
+                         then length xs
+                         else length ys
 
 {-------------------------------------------------------------------------------------
 
@@ -91,6 +99,12 @@ generateRandomPaths n acc nodes veicleCapacity = do
                             then generateRandomPaths n acc nodes veicleCapacity
                             else generateRandomPaths (n-1) (v:acc) nodes veicleCapacity
 
+-- If a path is invalid it remove the last node until it's valid
+restoreInvalidPath :: Int -> Path -> Bool -> Path
+restoreInvalidPath _ x True  = x
+restoreInvalidPath vc xs False = restoreInvalidPath vc z (validator vc z)
+                                 where
+                                   z = init xs
 
 {--------------------------------------------------------------------------------------
 
@@ -104,12 +118,12 @@ generateRandomPaths n acc nodes veicleCapacity = do
 singleMontecarloExtraction :: [Path] -> IO Path
 singleMontecarloExtraction paths =
   do
-    r <- rand $ totalFitness paths
+    r <- rand 0.0 $ totalFitness paths
     return $ montecarloPick paths r
 
 
-
-montecarlo :: [Path] -> Int -> IO [ Path]
+-- Function that do the montecarlo, uses the previous function and concat single montecarlo extraction
+montecarlo :: [Path] -> Int -> IO [Path]
 montecarlo x y = sequence $ f x y
                  where
                    f _ 0 = do []
@@ -124,7 +138,10 @@ montecarloRages [] _ = []
 montecarloRages paths acc = x : montecarloRages (tail paths) x
                                 where
                                   x = (acc + head (fitness paths))
-
+{-
+    From a list of paths and the random of the montecarlo estraction
+    Check in what range it is and return the element of the population
+-}
 montecarloPick :: [Path] -> Float -> Path
 montecarloPick paths randomIndex =
   let
@@ -144,15 +161,26 @@ montecarloPick paths randomIndex =
 
 ---------------------------------------------------------------------------------------}
 
+{-
+    From a path and a list of path, return a new list with all the pairs between the
+    starting path and the list. If the element is in the list the (x,x) pair is skipped
+-}
 pathPairBuilder :: Path -> [Path] -> [(Path,Path)]
 pathPairBuilder x [] = []
 pathPairBuilder x (z:zs) = if (x == z)
                            then pathPairBuilder x zs
                            else (x,z) : pathPairBuilder x zs
 
+{-
+     From a list of path return a list of all the pairs between all the element in the list.
+-}
 pathPair :: [Path] -> [(Path,Path)]
 pathPair xs = concatMap (\y -> pathPairBuilder y xs) xs
 
+{-
+    From a list of floats(randoms) and a list of pairs of paths
+    return a list of pairs of paths filtered by the crossover probability
+-}
 selectPairByFloat :: [Float] -> [(Path,Path)] -> [(Path,Path)] -> [(Path,Path)]
 selectPairByFloat _ [] acc = acc
 selectPairByFloat [] _ acc = acc
@@ -160,6 +188,9 @@ selectPairByFloat (x:xs) (y:ys) acc = if (x >= crossoverProbability)
                                       then selectPairByFloat xs ys (y : acc)
                                       else selectPairByFloat xs ys acc
 
+{-
+    From a list of paths it return the crossover selection. see previous functions
+-}
 selectForCrossOver :: [Path] -> IO [(Path, Path)]
 selectForCrossOver [] = return []
 selectForCrossOver xs =
@@ -167,6 +198,34 @@ selectForCrossOver xs =
     pairs = pathPair xs
   in
     do
-      r <- randList 1.0 (length pairs)
+      r <- randList 0.0 1.0 (length pairs)
       print r
       return (selectPairByFloat r (pairs) [])
+
+{-
+    Generate 2 random values between the list length in input
+-}
+generateTwoPointCrossoverIndices :: Int -> IO (Int,Int)
+generateTwoPointCrossoverIndices listLength =
+  do
+    r1 <- rand 0 listLength
+    r2 <- rand r1 listLength
+    return (r1,r2)
+
+{-
+    From a path and 2 input nodes this return a new path
+    with the input nodes swapped.
+-}
+swapNodes :: Path -> Node -> Node -> Path
+swapNodes [] _ _ = []
+swapNodes (x:xs) n m
+  | n == x = m : (swapNodes xs n m)
+  | m == x = n : (swapNodes xs n m)
+  | otherwise = x : (swapNodes xs n m)
+
+{-
+crossoverTwoPath :: (Path, Path) -> IO (Path, Path)
+crossoverTwoPath (x,y) =
+  do
+    (r1,r2) <- generateTwoPointCrossoverIndices (getShorterLength x y)
+-}
