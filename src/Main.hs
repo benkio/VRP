@@ -6,7 +6,6 @@ import Behaviour.Genetics.Algorithm
 import Data.String.Utils
 import Domain
 import Parameters
-
 main :: IO()
 main = do
   print("------------- VRP Genetics---------------------")
@@ -26,12 +25,15 @@ main = do
   prettyPrintPathPairs c
   pressKeyToContinue
   print("crossover: child Generation, new population")
-  childs <- mapM (\x -> crossoverTwoPath x (vehiclesCapacity fileContent)) c
-  prettyPrintPathList $ m ++ ( flattenPathPairList ( childs ))
+  childs <- mapM (\x -> crossoverTwoPath x) c
+  prettyPrintPathList $ filter (\x -> validator (vehiclesCapacity fileContent) x) $ m ++ ( flattenPathPairList ( childs ))
   pressKeyToContinue
   print("Apply Mutation")
   mutatedPop <- applyMutation $ m ++ ( flattenPathPairList ( childs ))
   prettyPrintPathList mutatedPop
+  pressKeyToContinue
+  print("Best Path of this iteration")
+  print $ selectBestPath (tail mutatedPop) (head mutatedPop)
   pressKeyToContinue
   
 

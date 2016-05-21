@@ -53,3 +53,13 @@ fitness paths = map (\x -> calculatePathDistance (map fst x)) paths
 -- calculate the total fitness of a population
 totalFitness :: [Path] -> Float
 totalFitness paths = foldr (+) 0 $ fitness $ paths
+
+selectBestPath :: [Path] -> Path -> Path
+selectBestPath [] x = x
+selectBestPath (x:xs) p =
+  let
+    calcFitness y = calculatePathDistance (map fst y)
+  in
+    if ( calcFitness x < calcFitness p)
+    then selectBestPath xs x
+    else selectBestPath xs p

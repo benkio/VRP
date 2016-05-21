@@ -98,14 +98,6 @@ generateRandomPaths n acc nodes veicleCapacity = do
                             then generateRandomPaths n acc nodes veicleCapacity
                             else generateRandomPaths (n-1) (v:acc) nodes veicleCapacity
 
--- If a path is invalid it remove the last node until it's valid
-restoreInvalidPath :: Int -> Path -> Path
-restoreInvalidPath vc xs = if (validator vc xs)
-                           then xs
-                           else restoreInvalidPath vc z
-                                 where
-                                   z = if (duplicateCheck xs) then nub xs else init xs
-
 {--------------------------------------------------------------------------------------
 
                          MONTECARLO EXTRACTION FUNCITONS
@@ -222,23 +214,27 @@ getSubList xs a b = take (b-a) $ drop a xs
     Inject a sublist in the first argument
     starting from the third and forth argument indices
 -}
-injectSubList :: [a] -> [a] -> Int -> Int -> [a]
-injectSubList xs ys a b = (take a xs) ++ (getSubList ys a b) ++ (drop b xs)
+injectSubList :: (Eq a) => [a] -> [a] -> Int -> Int -> [a]
+injectSubList xs ys a b =
+  let
+    midList = (getSubList ys a b)
+    zs = filter (\x -> x `notElem` midList) xs
+    w = (length xs)-b
+  in
+  (drop w zs) ++ midList ++ (take w zs)
+   
 
 {-
     From the pair of paths in input this swap the random inner part
     and return the result if the path is valid
 -}
-crossoverTwoPath :: (Path, Path) -> Int -> IO (Path, Path)
-crossoverTwoPath (x,y) vc =
-  let
-    f xs = restoreInvalidPath vc xs
-  in
+crossoverTwoPath :: (Path, Path) -> IO (Path, Path)
+crossoverTwoPath (x,y) =
     do
       (r1,r2) <- generateTwoPointCrossoverIndices (getShorterLength x y)
 {-      print r1
       print r2  -}
-      return (f (injectSubList x y r1 r2),f (injectSubList y x r1 r2))
+      return (injectSubList x y r1 r2, injectSubList y x r1 r2)
 
 {----------------------------------------------------------------------------
 
