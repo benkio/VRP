@@ -54,4 +54,5 @@ prettyPrintPathPairs paths =
    putStr (
     replace "[([" "[\n  (\n    [" (
         replace "])]" "\n    ]\n  )\n]" (
-            replace "]),([" "]\n  ),\n  (\n    [" input )))
+            replace "],[" "],\n    [" (
+                replace "]),([" "]\n  ),\n  (\n    [" input ))))

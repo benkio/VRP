@@ -32,10 +32,6 @@ printRVar a =
     b <- unwrapRVar a
     print b
 
--- Check if the given Path is valid or not
-validator :: Int -> Path -> Bool
-validator veicleCapacity nodes = (pathIsValid veicleCapacity (map snd nodes)) && nodes/=[]
-
 -- Return a random from 0.0 to Max (float)
 rand :: (Random a) => a -> a -> IO a
 rand x y = newStdGen >>= return . fst . randomR (x,y)
@@ -100,11 +96,12 @@ generateRandomPaths n acc nodes veicleCapacity = do
                             else generateRandomPaths (n-1) (v:acc) nodes veicleCapacity
 
 -- If a path is invalid it remove the last node until it's valid
-restoreInvalidPath :: Int -> Path -> Bool -> Path
-restoreInvalidPath _ x True  = x
-restoreInvalidPath vc xs False = restoreInvalidPath vc z (validator vc z)
+restoreInvalidPath :: Int -> Path -> Path
+restoreInvalidPath vc xs = if (validator vc xs)
+                           then xs
+                           else restoreInvalidPath vc z
                                  where
-                                   z = init xs
+                                   z = if (duplicateCheck xs) then nub xs else init xs
 
 {--------------------------------------------------------------------------------------
 
@@ -166,7 +163,7 @@ montecarloPick paths randomIndex =
     starting path and the list. If the element is in the list the (x,x) pair is skipped
 -}
 pathPairBuilder :: Path -> [Path] -> [(Path,Path)]
-pathPairBuilder x [] = []
+pathPairBuilder _ [] = []
 pathPairBuilder x (z:zs) = if (x == z)
                            then pathPairBuilder x zs
                            else (x,z) : pathPairBuilder x zs
@@ -210,7 +207,7 @@ generateTwoPointCrossoverIndices listLength =
   do
     r1 <- rand 0 listLength
     r2 <- rand r1 listLength
-    return (r1,r2)
+    if (r1 /= r2) then return (r1,r2) else generateTwoPointCrossoverIndices listLength
 
 {-
     From a path and 2 input nodes this return a new path
@@ -224,8 +221,30 @@ swapNodes (x:xs) n m
   | otherwise = x : (swapNodes xs n m)
 
 {-
-crossoverTwoPath :: (Path, Path) -> IO (Path, Path)
-crossoverTwoPath (x,y) =
-  do
-    (r1,r2) <- generateTwoPointCrossoverIndices (getShorterLength x y)
+    Estract a portion of a list form the input one.
 -}
+getSubList :: [a] -> Int -> Int -> [a]
+getSubList xs a b = take (b-a) $ drop a xs
+
+{-
+    Inject a sublist in the first argument
+    starting from the third and forth argument indices
+-}
+injectSubList :: [a] -> [a] -> Int -> Int -> [a]
+injectSubList xs ys a b = (take a xs) ++ (getSubList ys a b) ++ (drop b xs)
+
+{-
+    From the pair of paths in input this swap the random inner part
+    and return the result if the path is valid
+-}
+crossoverTwoPath :: (Path, Path) -> Int -> IO (Path, Path)
+crossoverTwoPath (x,y) vc =
+  let
+    f xs = restoreInvalidPath vc xs
+  in
+    do
+      (r1,r2) <- generateTwoPointCrossoverIndices (getShorterLength x y)
+      print r1
+      print r2
+      return (f (injectSubList x y r1 r2),f (injectSubList y x r1 r2))
+
