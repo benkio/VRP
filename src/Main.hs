@@ -21,13 +21,19 @@ main = do
   m <- montecarlo pop populationNumber
   prettyPrintPathList m
   pressKeyToContinue
-  print("all pairs")
-  prettyPrintPathPairs (pathPair m)
-  pressKeyToContinue
-  print("crossover")
+  print("crossover: random esctraction and parent selection")
   c <- selectForCrossOver m
   prettyPrintPathPairs c
   pressKeyToContinue
+  print("crossover: child Generation, new population")
+  childs <- mapM (\x -> crossoverTwoPath x (vehiclesCapacity fileContent)) c
+  prettyPrintPathList $ m ++ ( flattenPathPairList ( childs ))
+  pressKeyToContinue
+  print("Apply Mutation")
+  mutatedPop <- applyMutation $ m ++ ( flattenPathPairList ( childs ))
+  prettyPrintPathList mutatedPop
+  pressKeyToContinue
+  
 
 pressKeyToContinue :: IO ()
 pressKeyToContinue =

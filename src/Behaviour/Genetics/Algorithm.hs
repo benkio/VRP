@@ -32,7 +32,7 @@ printRVar a =
     b <- unwrapRVar a
     print b
 
--- Return a random from 0.0 to Max (float)
+-- Return a random from min to Max 
 rand :: (Random a) => a -> a -> IO a
 rand x y = newStdGen >>= return . fst . randomR (x,y)
 
@@ -45,6 +45,9 @@ getShorterLength :: [a] -> [a] -> Int
 getShorterLength xs ys = if (length xs < length ys)
                          then length xs
                          else length ys
+
+flattenPathPairList :: [(Path,Path)] -> [Path]
+flattenPathPairList xs = foldr (\(a,b) ys -> ys ++ [a, b]) [] xs
 
 {-------------------------------------------------------------------------------------
 
@@ -181,7 +184,7 @@ pathPair xs = concatMap (\y -> pathPairBuilder y xs) xs
 selectPairByFloat :: [Float] -> [(Path,Path)] -> [(Path,Path)] -> [(Path,Path)]
 selectPairByFloat _ [] acc = acc
 selectPairByFloat [] _ acc = acc
-selectPairByFloat (x:xs) (y:ys) acc = if (x >= crossoverProbability)
+selectPairByFloat (x:xs) (y:ys) acc = if (x <= crossoverProbability)
                                       then selectPairByFloat xs ys (y : acc)
                                       else selectPairByFloat xs ys acc
 
@@ -210,17 +213,6 @@ generateTwoPointCrossoverIndices listLength =
     if (r1 /= r2) then return (r1,r2) else generateTwoPointCrossoverIndices listLength
 
 {-
-    From a path and 2 input nodes this return a new path
-    with the input nodes swapped.
--}
-swapNodes :: Path -> Node -> Node -> Path
-swapNodes [] _ _ = []
-swapNodes (x:xs) n m
-  | n == x = m : (swapNodes xs n m)
-  | m == x = n : (swapNodes xs n m)
-  | otherwise = x : (swapNodes xs n m)
-
-{-
     Estract a portion of a list form the input one.
 -}
 getSubList :: [a] -> Int -> Int -> [a]
@@ -244,7 +236,38 @@ crossoverTwoPath (x,y) vc =
   in
     do
       (r1,r2) <- generateTwoPointCrossoverIndices (getShorterLength x y)
-      print r1
-      print r2
+{-      print r1
+      print r2  -}
       return (f (injectSubList x y r1 r2),f (injectSubList y x r1 r2))
 
+{----------------------------------------------------------------------------
+
+                     Mutation Functions
+
+-----------------------------------------------------------------------------}
+
+{-
+    From a path and 2 input nodes this return a new path
+    with the input nodes swapped.
+-}
+swapNodes :: Path -> Node -> Node -> Path
+swapNodes [] _ _ = []
+swapNodes (x:xs) n m
+  | n == x = m : (swapNodes xs n m)
+  | m == x = n : (swapNodes xs n m)
+  | otherwise = x : (swapNodes xs n m)
+
+applyMutation :: [Path] -> IO [Path]
+applyMutation xs = mapM f xs
+                   where
+                     f x =
+                       do
+                        (r1,r2) <- generateTwoPointCrossoverIndices ((length x) -1)
+                        pm <- rand 0.0 1.0
+                        if (pm <= mutationProbability)
+                          then
+                            do
+                              print (x,r1,r2,pm)
+                              return $ swapNodes x (x !! r1) (x !! r2)
+                          else return x
+                     

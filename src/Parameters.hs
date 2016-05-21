@@ -33,3 +33,6 @@ demandLineIndex = 2
 ---------------------------------}
 crossoverProbability :: Float
 crossoverProbability = 0.6
+
+mutationProbability :: Float
+mutationProbability = 0.1
