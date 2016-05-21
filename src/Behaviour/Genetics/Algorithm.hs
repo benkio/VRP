@@ -236,6 +236,45 @@ crossoverTwoPath (x,y) =
       print r2  -}
       return (injectSubList x y r1 r2, injectSubList y x r1 r2)
 
+{-
+    Substitute a single path to che population
+    1 - population
+    2 - Parent
+    3 - Child
+-}
+substitute :: [Path] -> Path -> Path -> [Path]
+substitute [] _ _ = []
+substitute (x:xs) p c
+    | x == p = c : xs
+    | otherwise = x : substitute xs p c 
+
+{-
+    Add new checks to the previous substitution, wrap it
+    if the element parent is in the population and the child is valid the substitution happens
+    if the parent isn't in the population the worsefitnesspath is substituted instead
+    Nothing happens otherwise.
+-}
+substituteParentWithChild :: [Path] -> Path -> Path -> Int-> [Path]
+substituteParentWithChild xs p c vc 
+    | (p `elem` xs) && validator vc c = substitute xs p c
+    | validator vc c = substitute xs worseFitnessPath c
+    | otherwise = xs
+    where
+      worseFitnessPath = (selectPath (tail xs) (head xs) (\x y -> calcFitness x > calcFitness y) )
+
+{-
+    Given a population, a list of Parents and a list of Childs substitute them in a new population.
+-}
+substituteParentWithChild' :: [Path] -> [(Path,Path)] -> [(Path,Path)] -> Int -> [Path]
+substituteParentWithChild' xs [] _ _ = xs
+substituteParentWithChild' xs _ [] _ = xs
+substituteParentWithChild' xs ((a,b):ys) ((c,d):zs) vc =
+  let
+    s1 = substituteParentWithChild xs a c vc
+    s2 = substituteParentWithChild s1 b d vc
+  in
+    substituteParentWithChild' s2 ys zs vc
+
 {----------------------------------------------------------------------------
 
                      Mutation Functions

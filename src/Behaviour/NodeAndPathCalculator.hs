@@ -42,7 +42,7 @@ duplicateCheck (x:xs) = if (x `elem` xs)
                           then x `elem` xs
                           else duplicateCheck xs
 
--- Check if the given Path is valid or not
+-- Check if the given Path is valid or not TRUE IF IS VALID
 validator :: Int -> Path -> Bool
 validator veicleCapacity nodes = (pathIsValid veicleCapacity (map snd nodes)) && nodes/=[] && not (duplicateCheck nodes)
 
@@ -54,12 +54,12 @@ fitness paths = map (\x -> calculatePathDistance (map fst x)) paths
 totalFitness :: [Path] -> Float
 totalFitness paths = foldr (+) 0 $ fitness $ paths
 
-selectBestPath :: [Path] -> Path -> Path
-selectBestPath [] x = x
-selectBestPath (x:xs) p =
-  let
-    calcFitness y = calculatePathDistance (map fst y)
-  in
-    if ( calcFitness x < calcFitness p)
-    then selectBestPath xs x
-    else selectBestPath xs p
+selectPath :: [Path] -> Path -> (Path->Path->Bool)-> Path
+selectPath [] x  _= x
+selectPath (x:xs) p f =
+    if ( f x p )
+    then selectPath xs x f
+    else selectPath xs p f
+
+calcFitness :: Path -> Float
+calcFitness y = calculatePathDistance (map fst y)
