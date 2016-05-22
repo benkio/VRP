@@ -28,25 +28,25 @@ genetics v pop best i = do
   print("montecarlo Selection")
   m <- montecarlo pop populationNumber
   prettyPrintPathList m
-  pressKeyToContinue
+--  pressKeyToContinue
   print("crossover: random esctraction and parent selection")
   parent <- selectForCrossOver m
   prettyPrintPathPairs parent
-  pressKeyToContinue
+--  pressKeyToContinue
   print("crossover: child Generation, new population")
   childs <- mapM (\x -> crossoverTwoPath x) parent
   prettyPrintPathList $ substituteParentWithChild' m parent childs v
   -- prettyPrintPathList $ filter (\x -> validator (vehiclesCapacity fileContent) x) $ m ++ ( flattenPathPairList ( childs ))
-  pressKeyToContinue
+--  pressKeyToContinue
   print("Apply Mutation")
   mutatedPop <- applyMutation $ substituteParentWithChild' m parent childs v
   prettyPrintPathList mutatedPop
-  pressKeyToContinue
+--  pressKeyToContinue
   print("Best Path of this iteration")
   let bestPath = selectPath (tail mutatedPop) (head mutatedPop) (\x y -> calcFitness x < calcFitness y)
   print (show bestPath ++ " with fitness of: ")
   print $ calcFitness bestPath
-  pressKeyToContinue
+--  pressKeyToContinue
   case ((calcFitness bestPath < calcFitness best),(i <= iterationNumber)) of
     (True,True) -> genetics v mutatedPop bestPath (i+1)
     (False,True) -> genetics v mutatedPop best (i+1)
