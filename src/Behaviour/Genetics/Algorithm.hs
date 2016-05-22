@@ -121,7 +121,6 @@ montecarlo x y = sequence $ f x y
                    f _ 0 = do []
                    f paths n = singleMontecarloExtraction paths : f paths (n-1)
 
-
 {-
     From the input population fitness return a list of ranges from 1 to the total fitness
 -}
@@ -129,7 +128,7 @@ montecarloRages :: [Path] -> Float -> [Float]
 montecarloRages [] _ = []
 montecarloRages paths acc = x : montecarloRages (tail paths) x
                                 where
-                                  x = (acc + head (fitness paths))
+                                  x = acc + head (fitnessInverse paths)
 {-
     From a list of paths and the random of the montecarlo estraction
     Check in what range it is and return the element of the population
@@ -137,11 +136,14 @@ montecarloRages paths acc = x : montecarloRages (tail paths) x
 montecarloPick :: [Path] -> Float -> Path
 montecarloPick paths randomIndex =
   let
-    ranges = montecarloRages paths 0
+    ranges = zip paths (montecarloRages paths 0)
   in
-    f randomIndex (zip paths ranges)
+    if (length paths == length (montecarloRages paths 0))
+    then f randomIndex ranges
+    else error "ERROR LENGTH"
   where
     f :: Float -> [(Path,Float)] -> Path
+    f pick [] = error "zipList Empty"
     f pick ziplist =
       if ((snd (head ziplist)) > pick)
       then fst (head ziplist)

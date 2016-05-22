@@ -12,6 +12,9 @@ populationNumber = 5
 vrpInstances :: [Int]
 vrpInstances = [0..10]
 
+iterationNumber :: Int
+iterationNumber = 1000
+
 {-------------------------------
         TxT Parse Parameters
 ---------------------------------}

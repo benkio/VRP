@@ -1,6 +1,8 @@
 module Behaviour.NodeAndPathCalculator where
 
 import Domain
+import Data.List
+import Data.Function
 
 {-
     In this file there're the functions that compute Nodes and Paths
@@ -49,6 +51,16 @@ validator veicleCapacity nodes = (pathIsValid veicleCapacity (map snd nodes)) &&
 -- Calculate the fitness of a list of paths
 fitness :: [Path] -> [Float]
 fitness paths = map (\x -> calculatePathDistance (map fst x)) paths
+
+fitnessInverse :: [Path] -> [Float]
+fitnessInverse [] = []
+fitnessInverse xs =
+  let
+    ys = sort $ zip (fitness xs) [0..(length xs)]
+    zs = reverse ys
+    as = map (\((a,b),(c,d)) -> (a,d)) $ zip ys zs 
+  in
+    map (\x -> fst x) $ sortBy (compare `on` snd) as
 
 -- calculate the total fitness of a population
 totalFitness :: [Path] -> Float

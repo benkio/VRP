@@ -8,15 +8,23 @@ import Domain
 import Parameters
 
 main :: IO()
-main = do
-  print("------------- VRP Genetics---------------------")
-  print("Parse input File")
-  fileContent <- readSingleFile $ head $ getInstanceFiles $ 0
-  pressKeyToContinue
-  print("initial population")
-  pop <- unwrapRVar $ generateRandomPaths populationNumber [] (nodes fileContent) (vehiclesCapacity fileContent)
-  prettyPrintPathList pop
-  pressKeyToContinue
+main =
+  do
+      print("------------- VRP Genetics---------------------")
+      print("Parse input File")
+      fileContent <- readSingleFile $ head $ getInstanceFiles $ 0
+      pressKeyToContinue
+      let vc = vehiclesCapacity fileContent
+      let n = nodes fileContent
+      print("initial population")
+      pop <- unwrapRVar $ generateRandomPaths populationNumber [] n vc
+      prettyPrintPathList pop
+      pressKeyToContinue
+      best <- unwrapRVar $ generateRandomPath n False [] 0 vc
+      genetics vc pop best 0
+
+genetics :: Int -> [Path] -> Path -> Int -> IO()
+genetics v pop best i = do
   print("montecarlo Selection")
   m <- montecarlo pop populationNumber
   prettyPrintPathList m
@@ -27,18 +35,24 @@ main = do
   pressKeyToContinue
   print("crossover: child Generation, new population")
   childs <- mapM (\x -> crossoverTwoPath x) parent
-  prettyPrintPathList $ substituteParentWithChild' m parent childs (vehiclesCapacity fileContent)
+  prettyPrintPathList $ substituteParentWithChild' m parent childs v
   -- prettyPrintPathList $ filter (\x -> validator (vehiclesCapacity fileContent) x) $ m ++ ( flattenPathPairList ( childs ))
   pressKeyToContinue
   print("Apply Mutation")
-  mutatedPop <- applyMutation $ substituteParentWithChild' m parent childs (vehiclesCapacity fileContent)
+  mutatedPop <- applyMutation $ substituteParentWithChild' m parent childs v
   prettyPrintPathList mutatedPop
   pressKeyToContinue
   print("Best Path of this iteration")
-  print $ selectPath (tail mutatedPop) (head mutatedPop) (\x y -> calcFitness x < calcFitness y)
+  let bestPath = selectPath (tail mutatedPop) (head mutatedPop) (\x y -> calcFitness x < calcFitness y)
+  print (show bestPath ++ " with fitness of: ")
+  print $ calcFitness bestPath
   pressKeyToContinue
-  
-
+  case ((calcFitness bestPath < calcFitness best),(i <= iterationNumber)) of
+    (True,True) -> genetics v mutatedPop bestPath (i+1)
+    (False,True) -> genetics v mutatedPop best (i+1)
+    (True, False) -> print ("BEST PATH FOUND BY GENETIC ALGORITHM \n " ++ show bestPath ++ " with fitness of: " ++ show (calcFitness bestPath))
+    (False, False) -> print ("BEST PATH FOUND BY GENETIC ALGORITHM \n " ++ show best ++ " with fitness of: " ++ show (calcFitness best))
+    
 pressKeyToContinue :: IO ()
 pressKeyToContinue =
   do
