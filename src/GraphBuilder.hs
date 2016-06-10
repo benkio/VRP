@@ -4,6 +4,13 @@ module GraphBuilder where
 
 import Diagrams.Prelude
 import Diagrams.Backend.SVG.CmdLine
+import Domain
 
-example :: Diagram B
-example = flip atPoints (repeat (circle 0.2 # fc green)) $ map p2 $ [(1,1), (0,3), (-2,1), (-1,-4), (2,0)]
+pathToGraph :: Domain.Path -> Diagram B
+pathToGraph p = atPoints (pathToPoints p) (repeat (circle 0.2 # fc green))
+
+pathToPoints :: Domain.Path -> [Point V2 Double]
+pathToPoints p = map (\y -> p2(coordinatesToDouble(fst y))) p
+
+coordinatesToDouble :: Domain.Coordinate -> (Double, Double)
+coordinatesToDouble (x,y) = (fromIntegral x, fromIntegral y)

@@ -25,7 +25,7 @@ main =
       pressKeyToContinue
       best <- unwrapRVar $ generateRandomPath n False [] 0 vc
       genetics vc pop best 0
-      mainWith example
+      mainWith $ pathToGraph best
 
 genetics :: Int -> [Domain.Path] -> Domain.Path -> Int -> IO()
 genetics v pop best i = do
