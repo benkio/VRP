@@ -6,6 +6,9 @@ import Behaviour.Genetics.Algorithm
 import Data.String.Utils
 import Domain
 import Parameters
+import GraphBuilder
+import Diagrams.Prelude
+import Diagrams.Backend.SVG.CmdLine
 
 main :: IO()
 main =
@@ -22,8 +25,9 @@ main =
       pressKeyToContinue
       best <- unwrapRVar $ generateRandomPath n False [] 0 vc
       genetics vc pop best 0
+      mainWith example
 
-genetics :: Int -> [Path] -> Path -> Int -> IO()
+genetics :: Int -> [Domain.Path] -> Domain.Path -> Int -> IO()
 genetics v pop best i = do
   print("montecarlo Selection")
   m <- montecarlo pop populationNumber

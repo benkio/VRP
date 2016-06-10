@@ -58,7 +58,7 @@ fitnessInverse xs =
   let
     ys = sort $ zip (fitness xs) [0..(length xs)]
     zs = reverse ys
-    as = map (\((a,b),(c,d)) -> (a,d)) $ zip ys zs 
+    as = map (\((a,_),(_,d)) -> (a,d)) $ zip ys zs 
   in
     map (\x -> fst x) $ sortBy (compare `on` snd) as
 

@@ -6,11 +6,9 @@ module Behaviour.Genetics.Algorithm where
 
 import Domain
 import Data.Random
-import Data.Random.RVar
 import System.Random
 import Data.List
 import Behaviour.NodeAndPathCalculator
-import Control.Monad
 import Parameters
 
 {-------------------------------------------------------------------------------------
@@ -145,7 +143,7 @@ montecarloPick paths randomIndex =
     else error "ERROR LENGTH"
   where
     f :: Float -> [(Path,Float)] -> Path
-    f pick [] = []
+    f _ [] = []
     f pick ziplist =
       if ((snd (head ziplist)) > pick)
       then fst (head ziplist)
