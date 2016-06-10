@@ -20,7 +20,7 @@ iterationNumber = 1000
 ---------------------------------}
 
 filesBasePath :: VRPFilePath
-filesBasePath = "/home/benkio/projects/VRP/files/"
+filesBasePath = "/work/VRP/files/"
 
 xLineIndex :: Int
 xLineIndex = 0
