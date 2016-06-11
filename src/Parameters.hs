@@ -7,7 +7,7 @@ module Parameters where
 import Domain
 
 populationNumber :: Int
-populationNumber = 5
+populationNumber = 50
 
 vrpInstances :: [Int]
 vrpInstances = [0..10]
@@ -15,12 +15,15 @@ vrpInstances = [0..10]
 iterationNumber :: Int
 iterationNumber = 1000
 
+thrasholdUntilRandomPop :: Int
+thrasholdUntilRandomPop = 50
+
 {-------------------------------
         TxT Parse Parameters
 ---------------------------------}
 
 filesBasePath :: VRPFilePath
-filesBasePath = "/work/VRP/files/"
+filesBasePath = "/home/benkio/projects/VRP/files/"
 
 xLineIndex :: Int
 xLineIndex = 0

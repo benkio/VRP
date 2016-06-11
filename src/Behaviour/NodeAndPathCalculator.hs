@@ -31,8 +31,8 @@ calculateDemand :: [Demand] -> Int
 calculateDemand x = foldr (+) 0 x
 
 -- check if the path is valid (input the vehicle capacity)
-pathIsValid :: Int -> [Demand] -> Bool
-pathIsValid x y = (calculateDemand y) < x
+demandIsValid :: Int -> [Demand] -> Bool
+demandIsValid x y = (calculateDemand y) < x
 
 
 {-
@@ -46,7 +46,7 @@ duplicateCheck (x:xs) = if (x `elem` xs)
 
 -- Check if the given Path is valid or not TRUE IF IS VALID
 validator :: Int -> Path -> Bool
-validator veicleCapacity nodes = (pathIsValid veicleCapacity (map snd nodes)) && nodes/=[] && not (duplicateCheck nodes)
+validator veicleCapacity nodes = (demandIsValid veicleCapacity (map snd nodes)) && nodes/=[] && not (duplicateCheck nodes) && ( head nodes == ((0,0),0) )
 
 -- Calculate the fitness of a list of paths
 fitness :: [Path] -> [Float]
@@ -58,7 +58,7 @@ fitnessInverse xs =
   let
     ys = sort $ zip (fitness xs) [0..(length xs)]
     zs = reverse ys
-    as = map (\((a,_),(_,d)) -> (a,d)) $ zip ys zs 
+    as = map (\((a,_),(_,d)) -> (a,d)) $ zip ys zs
   in
     map (\x -> fst x) $ sortBy (compare `on` snd) as
 

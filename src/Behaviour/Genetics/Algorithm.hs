@@ -30,7 +30,7 @@ printRVar a =
     b <- unwrapRVar a
     print b
 
--- Return a random from min to Max 
+-- Return a random from min to Max
 rand :: (Random a) => a -> a -> IO a
 rand x y = newStdGen >>= return . fst . randomR (x,y)
 
@@ -81,7 +81,7 @@ generateRandomPath nodes False _ n veicleCapacity = if (n==100)
                                      else
                                        (do
                                          s <- shuffle nodes
-                                         generateRandomPath nodes (validator veicleCapacity s) s (n+1) veicleCapacity)
+                                         generateRandomPath nodes (validator veicleCapacity (((0,0),0) : s)) (((0,0),0) : s) (n+1) veicleCapacity)
 
 {-
     Use the previous function to generate a fixed number of random paths
@@ -193,7 +193,7 @@ selectForCrossOver xs =
   in
     do
       r <- randList 0.0 1.0 (length pairs)
-      print r
+    --  print r
       return (selectPairByFloat r (pairs) [])
 
 {-
@@ -224,7 +224,7 @@ injectSubList xs ys a b =
     w = (length xs)-b
   in
   (drop w zs) ++ midList ++ (take w zs)
-   
+
 
 {-
     From the pair of paths in input this swap the random inner part
@@ -248,7 +248,7 @@ substitute :: [Path] -> Path -> Path -> [Path]
 substitute [] _ _ = []
 substitute (x:xs) p c
     | x == p = c : xs
-    | otherwise = x : substitute xs p c 
+    | otherwise = x : substitute xs p c
 
 {-
     Add new checks to the previous substitution, wrap it
@@ -257,7 +257,7 @@ substitute (x:xs) p c
     Nothing happens otherwise.
 -}
 substituteParentWithChild :: [Path] -> Path -> Path -> Int-> [Path]
-substituteParentWithChild xs p c vc 
+substituteParentWithChild xs p c vc
     | (p `elem` xs) && validator vc c = substitute xs p c
     | validator vc c = substitute xs worseFitnessPath c
     | otherwise = xs
@@ -304,7 +304,6 @@ applyMutation xs = mapM f xs
                         if (pm <= mutationProbability)
                           then
                             do
-                              print (x,r1,r2,pm)
+                            --  print (x,r1,r2,pm)
                               return $ swapNodes x (x !! r1) (x !! r2)
                           else return x
-                     

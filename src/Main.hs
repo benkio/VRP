@@ -25,26 +25,25 @@ main =
       pressKeyToContinue
       best <- unwrapRVar $ generateRandomPath n False [] 0 vc
       genetics vc pop best 0
-      mainWith $ pathToGraph best
 
-genetics :: Int -> [Domain.Path] -> Domain.Path -> Int -> IO()
+genetics :: Int -> [Domain.Path] -> Domain.Path -> Int ->  IO()
 genetics v pop best i = do
   print("montecarlo Selection")
   m <- montecarlo pop populationNumber
-  prettyPrintPathList m
+--  prettyPrintPathList m
 --  pressKeyToContinue
   print("crossover: random esctraction and parent selection")
   parent <- selectForCrossOver m
-  prettyPrintPathPairs parent
+--  prettyPrintPathPairs parent
 --  pressKeyToContinue
   print("crossover: child Generation, new population")
   childs <- mapM (\x -> crossoverTwoPath x) parent
-  prettyPrintPathList $ substituteParentWithChild' m parent childs v
-  -- prettyPrintPathList $ filter (\x -> validator (vehiclesCapacity fileContent) x) $ m ++ ( flattenPathPairList ( childs ))
+--  prettyPrintPathList $ substituteParentWithChild' m parent childs v
+--  prettyPrintPathList $ filter (\x -> validator (vehiclesCapacity fileContent) x) $ m ++ ( flattenPathPairList ( childs ))
 --  pressKeyToContinue
   print("Apply Mutation")
   mutatedPop <- applyMutation $ substituteParentWithChild' m parent childs v
-  prettyPrintPathList mutatedPop
+--  prettyPrintPathList mutatedPop
 --  pressKeyToContinue
   print("Best Path of this iteration")
   let bestPath = selectPath (tail mutatedPop) (head mutatedPop) (\x y -> calcFitness x < calcFitness y)
@@ -54,9 +53,13 @@ genetics v pop best i = do
   case ((calcFitness bestPath < calcFitness best),(i <= iterationNumber)) of
     (True,True) -> genetics v mutatedPop bestPath (i+1)
     (False,True) -> genetics v mutatedPop best (i+1)
-    (True, False) -> print ("BEST PATH FOUND BY GENETIC ALGORITHM \n " ++ show bestPath ++ " with fitness of: " ++ show (calcFitness bestPath))
-    (False, False) -> print ("BEST PATH FOUND BY GENETIC ALGORITHM \n " ++ show best ++ " with fitness of: " ++ show (calcFitness best))
-    
+    (True, False) -> ( do
+                         print ("BEST PATH FOUND BY GENETIC ALGORITHM \n " ++ show bestPath ++ " with fitness of: " ++ show (calcFitness bestPath))
+                         mainWith  (pathToGraph bestPath))
+    (False, False) -> ( do
+                          print ("BEST PATH FOUND BY GENETIC ALGORITHM \n " ++ show best ++ " with fitness of: " ++ show (calcFitness best))
+                          mainWith (pathToGraph best) )
+
 pressKeyToContinue :: IO ()
 pressKeyToContinue =
   do
