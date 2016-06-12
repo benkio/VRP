@@ -32,7 +32,7 @@ pathToPoints p = map (\y -> p2(coordinatesToDouble(fst y))) p
     Convert coordinate to double due to type checking errors
 -}
 coordinatesToDouble :: Domain.Coordinate -> (Double, Double)
-coordinatesToDouble (x,y) = ((fromIntegral x)/10, (fromIntegral y)/10)
+coordinatesToDouble (x,y) = ((fromIntegral x)/5, (fromIntegral y)/5)
 
 node :: Int -> Diagram B
 node n = (text (show n) # fontSizeL 0.2 # fc white <> circle 0.2 # fc green) # named (toName n)

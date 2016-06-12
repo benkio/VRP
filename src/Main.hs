@@ -14,20 +14,27 @@ main :: IO()
 main =
   do
       print("------------- VRP Genetics---------------------")
-      print("Parse input File")
-      fileContent <- readSingleFile $ head $ getInstanceFiles $ 0
-      pressKeyToContinue
-      let vc = vehiclesCapacity fileContent
-      let n = nodes fileContent
-      print("initial population")
-      pop <- unwrapRVar $ generateRandomPaths populationNumber [] n vc
-      prettyPrintPathList pop
-      pressKeyToContinue
-      best <- unwrapRVar $ generateRandomPath n False [] 0 vc
-      genetics vc pop best 0
+      geneticsInit vrpInstances
 
-genetics :: Int -> [Domain.Path] -> Domain.Path -> Int ->  IO()
-genetics v pop best i = do
+geneticsInit :: [Int] -> IO()
+geneticsInit [] = putStrLn "!!!!!!!!!!!!!!!!!End Genetics!!!!!!!!!!"
+geneticsInit (x:xs) = do
+  print("Parse input File #" ++ show x)
+  fileContent <- readSingleFile $ head $ getInstanceFiles $ x
+--  pressKeyToContinue
+  let vc = vehiclesCapacity fileContent
+  let n = nodes fileContent
+  print("initial population")
+  pop <- unwrapRVar $ generateRandomPaths populationNumber [] n vc
+--  prettyPrintPathList pop
+--  pressKeyToContinue
+  best <- unwrapRVar $ generateRandomPath n False [] 0 vc
+  genetics x vc pop best 0
+  geneticsInit xs
+
+
+genetics :: Int -> Int -> [Domain.Path] -> Domain.Path -> Int ->  IO()
+genetics v gaIstance pop best i = do
   print("montecarlo Selection")
   m <- montecarlo pop populationNumber
 --  prettyPrintPathList m
@@ -51,14 +58,14 @@ genetics v pop best i = do
   print $ calcFitness bestPath
 --  pressKeyToContinue
   case ((calcFitness bestPath < calcFitness best),(i <= iterationNumber)) of
-    (True,True) -> genetics v mutatedPop bestPath (i+1)
-    (False,True) -> genetics v mutatedPop best (i+1)
+    (True,True) -> genetics gaIstance v mutatedPop bestPath (i+1)
+    (False,True) -> genetics gaIstance v mutatedPop best (i+1)
     (True, False) -> ( do
                          print ("BEST PATH FOUND BY GENETIC ALGORITHM \n " ++ show bestPath ++ " with fitness of: " ++ show (calcFitness bestPath))
-                         renderPretty "bestGA.svg" diagramSize (pathToGraph bestPath))
+                         renderPretty ("bestGA"++ show gaIstance ++".svg") diagramSize (pathToGraph bestPath))
     (False, False) -> ( do
                           print ("BEST PATH FOUND BY GENETIC ALGORITHM \n " ++ show best ++ " with fitness of: " ++ show (calcFitness best))
-                          renderPretty "bestGA.svg" diagramSize (pathToGraph best))
+                          renderPretty ("bestGA"++ show gaIstance ++".svg") diagramSize (pathToGraph best))
 
 pressKeyToContinue :: IO ()
 pressKeyToContinue =

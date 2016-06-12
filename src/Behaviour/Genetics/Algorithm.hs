@@ -109,9 +109,7 @@ singleMontecarloExtraction :: [Path] -> IO Path
 singleMontecarloExtraction paths =
   do
     r <- rand 0.0 $ totalFitness paths
-    case (montecarloPick paths r) of
-      [] -> singleMontecarloExtraction paths
-      x -> return x
+    return $ montecarloPick paths r
 
 
 -- Function that do the montecarlo, uses the previous function and concat single montecarlo extraction
@@ -138,16 +136,15 @@ montecarloPick paths randomIndex =
   let
     ranges = zip paths (montecarloRages paths 0)
   in
-    if (length paths == length (montecarloRages paths 0))
-    then f randomIndex ranges
-    else error "ERROR LENGTH"
+    f randomIndex ranges
   where
     f :: Float -> [(Path,Float)] -> Path
     f _ [] = []
-    f pick ziplist =
-      if ((snd (head ziplist)) > pick)
-      then fst (head ziplist)
-      else f pick (tail ziplist)
+    f _ (z:[]) = fst z
+    f pick (z:zs) =
+      if ((snd z) > pick)
+      then fst z
+      else f pick zs
 
 {--------------------------------------------------------------------------------------
 

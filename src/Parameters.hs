@@ -9,19 +9,19 @@ import Diagrams.Prelude
 import Diagrams.Backend.SVG.CmdLine
 
 populationNumber :: Int
-populationNumber = 50
+populationNumber = 200
 
 vrpInstances :: [Int]
 vrpInstances = [0..10]
 
 iterationNumber :: Int
-iterationNumber = 1000
+iterationNumber = 500
 
 thrasholdUntilRandomPop :: Int
 thrasholdUntilRandomPop = 50
 
 diagramSize :: SizeSpec V2 Double
-diagramSize = mkWidth 500.0
+diagramSize = mkWidth 750.0
 
 {-------------------------------
         TxT Parse Parameters
