@@ -5,6 +5,8 @@ module Parameters where
 -------------------------------}
 
 import Domain
+import Diagrams.Prelude
+import Diagrams.Backend.SVG.CmdLine
 
 populationNumber :: Int
 populationNumber = 50
@@ -17,6 +19,9 @@ iterationNumber = 1000
 
 thrasholdUntilRandomPop :: Int
 thrasholdUntilRandomPop = 50
+
+diagramSize :: SizeSpec V2 Double
+diagramSize = mkWidth 500.0
 
 {-------------------------------
         TxT Parse Parameters

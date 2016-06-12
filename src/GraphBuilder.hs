@@ -13,7 +13,7 @@ import Domain
 {-
     generate a path diagram
 -}
-pathToGraph :: Domain.Path -> Diagram B
+pathToGraph :: Domain.Path -> QDiagram SVG V2 Double Any
 pathToGraph p =
   let
     points = pathToPoints p

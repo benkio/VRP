@@ -8,7 +8,7 @@ import Domain
 import Parameters
 import GraphBuilder
 import Diagrams.Prelude
-import Diagrams.Backend.SVG.CmdLine
+import Diagrams.Backend.SVG
 
 main :: IO()
 main =
@@ -55,10 +55,10 @@ genetics v pop best i = do
     (False,True) -> genetics v mutatedPop best (i+1)
     (True, False) -> ( do
                          print ("BEST PATH FOUND BY GENETIC ALGORITHM \n " ++ show bestPath ++ " with fitness of: " ++ show (calcFitness bestPath))
-                         mainWith  (pathToGraph bestPath))
+                         renderPretty "bestGA.svg" diagramSize (pathToGraph bestPath))
     (False, False) -> ( do
                           print ("BEST PATH FOUND BY GENETIC ALGORITHM \n " ++ show best ++ " with fitness of: " ++ show (calcFitness best))
-                          mainWith (pathToGraph best) )
+                          renderPretty "bestGA.svg" diagramSize (pathToGraph best))
 
 pressKeyToContinue :: IO ()
 pressKeyToContinue =
