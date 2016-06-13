@@ -13,18 +13,26 @@ import Diagrams.Backend.SVG
 main :: IO()
 main =
   do
-      print("------------- VRP Genetics---------------------")
-      geneticsInit vrpInstances
+      putStrLn "What Algorithm you want to run?(g - genetics, a - ants)"
+      algorithm <- getChar
+      getLine
+      putStrLn "What instances you want to run?(from 0 to 10 separated by space. Eg 0 or 1 2 4 etc)"
+      line <- getLine
+      case algorithm of
+        'g' -> geneticsInit (map read $ words line :: [Int])
+        'a' -> error "ants not implemented"
+        otherwise -> main
 
 geneticsInit :: [Int] -> IO()
 geneticsInit [] = putStrLn "!!!!!!!!!!!!!!!!!End Genetics!!!!!!!!!!"
 geneticsInit (x:xs) = do
+  print("------------- VRP Genetics---------------------")
   print("Parse input File #" ++ show x)
   fileContent <- readSingleFile $ head $ getInstanceFiles $ x
 --  pressKeyToContinue
   let vc = vehiclesCapacity fileContent
   let n = nodes fileContent
-  print("initial population")
+  print("initial population, Vehicle Capacity: " ++ show vc ++ " nodes: " ++ show n)
   pop <- unwrapRVar $ generateRandomPaths populationNumber [] n vc
 --  prettyPrintPathList pop
 --  pressKeyToContinue
