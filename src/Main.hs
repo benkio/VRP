@@ -29,37 +29,40 @@ geneticsInit (x:xs) = do
 --  prettyPrintPathList pop
 --  pressKeyToContinue
   best <- unwrapRVar $ generateRandomPath n False [] 0 vc
-  genetics x vc pop best 0
+  genetics vc n x pop best 0 0
   geneticsInit xs
 
 
-genetics :: Int -> Int -> [Domain.Path] -> Domain.Path -> Int ->  IO()
-genetics v gaIstance pop best i = do
-  print("montecarlo Selection")
+genetics :: Int -> [Node] -> Int -> [Domain.Path] -> Domain.Path -> Int -> Int -> IO()
+genetics vc nodes gaIstance pop best i iWithSameBest = do
+  pop <- if (iWithSameBest == thrasholdUntilRandomPop)
+  then (do unwrapRVar $ generateRandomPaths populationNumber [] nodes vc)
+  else return (pop)
+  print("montecarlo Selection, population length: " ++ show (length pop))
   m <- montecarlo pop populationNumber
 --  prettyPrintPathList m
 --  pressKeyToContinue
-  print("crossover: random esctraction and parent selection")
+  print("crossover: random esctraction and parent selection, montecarlo selection length: " ++ show (length m))
   parent <- selectForCrossOver m
 --  prettyPrintPathPairs parent
 --  pressKeyToContinue
-  print("crossover: child Generation, new population")
+  print("crossover: child Generation, new population, parent length: " ++ show (length parent) )
   childs <- mapM (\x -> crossoverTwoPath x) parent
---  prettyPrintPathList $ substituteParentWithChild' m parent childs v
+--  prettyPrintPathList $ substituteParentWithChild' m parent childs vc
 --  prettyPrintPathList $ filter (\x -> validator (vehiclesCapacity fileContent) x) $ m ++ ( flattenPathPairList ( childs ))
 --  pressKeyToContinue
-  print("Apply Mutation")
-  mutatedPop <- applyMutation $ substituteParentWithChild' m parent childs v
+  print("Apply Mutation, child length: " ++ show (length childs))
+  mutatedPop <- applyMutation $ substituteParentWithChild' m parent childs vc
 --  prettyPrintPathList mutatedPop
 --  pressKeyToContinue
-  print("Best Path of this iteration")
+  print("Best Path of this iteration, length newPop: " ++ show (length mutatedPop))
   let bestPath = selectPath (tail mutatedPop) (head mutatedPop) (\x y -> calcFitness x < calcFitness y)
   print (show bestPath ++ " with fitness of: ")
   print $ calcFitness bestPath
 --  pressKeyToContinue
   case ((calcFitness bestPath < calcFitness best),(i <= iterationNumber)) of
-    (True,True) -> genetics gaIstance v mutatedPop bestPath (i+1)
-    (False,True) -> genetics gaIstance v mutatedPop best (i+1)
+    (True,True) -> genetics vc nodes gaIstance  mutatedPop bestPath (i+1) 0
+    (False,True) -> genetics vc nodes gaIstance mutatedPop best (i+1) (iWithSameBest+1)
     (True, False) -> ( do
                          print ("BEST PATH FOUND BY GENETIC ALGORITHM \n " ++ show bestPath ++ " with fitness of: " ++ show (calcFitness bestPath))
                          renderPretty ("bestGA"++ show gaIstance ++".svg") diagramSize (pathToGraph bestPath))

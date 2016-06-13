@@ -15,10 +15,10 @@ vrpInstances :: [Int]
 vrpInstances = [0..10]
 
 iterationNumber :: Int
-iterationNumber = 500
+iterationNumber = 1000
 
 thrasholdUntilRandomPop :: Int
-thrasholdUntilRandomPop = 50
+thrasholdUntilRandomPop = 75
 
 diagramSize :: SizeSpec V2 Double
 diagramSize = mkWidth 750.0
@@ -28,7 +28,7 @@ diagramSize = mkWidth 750.0
 ---------------------------------}
 
 filesBasePath :: VRPFilePath
-filesBasePath = "/home/benkio/projects/VRP/files/"
+filesBasePath = "/work/VRP/files/"
 
 xLineIndex :: Int
 xLineIndex = 0

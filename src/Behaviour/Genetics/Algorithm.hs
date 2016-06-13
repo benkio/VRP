@@ -105,19 +105,30 @@ generateRandomPaths n acc nodes veicleCapacity = do
 {-
      Do a montecarlo selection on the input population and return a new population
 -}
-singleMontecarloExtraction :: [Path] -> IO Path
-singleMontecarloExtraction paths =
+singleMontecarloExtraction :: Float -> [(Path,Float)] -> IO Path
+singleMontecarloExtraction tf ranges =
   do
-    r <- rand 0.0 $ totalFitness paths
-    return $ montecarloPick paths r
+    r <- rand 0.0 tf
+    return $ f r ranges
+  where
+    f :: Float -> [(Path,Float)] -> Path
+    f _ [] = []
+    f _ (z:[]) = fst z
+    f pick (z:zs) =
+      if ((snd z) > pick)
+      then fst z
+      else f pick zs
+
 
 
 -- Function that do the montecarlo, uses the previous function and concat single montecarlo extraction
 montecarlo :: [Path] -> Int -> IO [Path]
-montecarlo x y = sequence $ f x y
+montecarlo x y = sequence $ f y
                  where
-                   f _ 0 = do []
-                   f paths n = singleMontecarloExtraction paths : f paths (n-1)
+                   tf = totalFitness x
+                   ranges = zip x $ montecarloRages x 0
+                   f 0 = do []
+                   f n = singleMontecarloExtraction tf ranges : f (n-1)
 
 {-
     From the input population fitness return a list of ranges from 1 to the total fitness
@@ -127,24 +138,6 @@ montecarloRages [] _ = []
 montecarloRages paths acc = x : montecarloRages (tail paths) x
                                 where
                                   x = acc + head (fitnessInverse paths)
-{-
-    From a list of paths and the random of the montecarlo estraction
-    Check in what range it is and return the element of the population
--}
-montecarloPick :: [Path] -> Float -> Path
-montecarloPick paths randomIndex =
-  let
-    ranges = zip paths (montecarloRages paths 0)
-  in
-    f randomIndex ranges
-  where
-    f :: Float -> [(Path,Float)] -> Path
-    f _ [] = []
-    f _ (z:[]) = fst z
-    f pick (z:zs) =
-      if ((snd z) > pick)
-      then fst z
-      else f pick zs
 
 {--------------------------------------------------------------------------------------
 
@@ -166,18 +159,19 @@ pathPairBuilder x (z:zs) = if (x == z)
      From a list of path return a list of all the pairs between all the element in the list.
 -}
 pathPair :: [Path] -> [(Path,Path)]
-pathPair xs = concatMap (\y -> pathPairBuilder y xs) xs
+pathPair [] = []
+pathPair (x:xs) = pathPairBuilder x xs ++ pathPair xs
 
 {-
     From a list of floats(randoms) and a list of pairs of paths
     return a list of pairs of paths filtered by the crossover probability
 -}
-selectPairByFloat :: [Float] -> [(Path,Path)] -> [(Path,Path)] -> [(Path,Path)]
-selectPairByFloat _ [] acc = acc
-selectPairByFloat [] _ acc = acc
-selectPairByFloat (x:xs) (y:ys) acc = if (x <= crossoverProbability)
-                                      then selectPairByFloat xs ys (y : acc)
-                                      else selectPairByFloat xs ys acc
+selectPathByFloat :: [Float] -> [Path] -> [Path] -> [Path]
+selectPathByFloat _ [] acc = acc
+selectPathByFloat [] _ acc = acc
+selectPathByFloat (x:xs) (y:ys) acc = if (x <= crossoverProbability)
+                                      then selectPathByFloat xs ys (y : acc)
+                                      else selectPathByFloat xs ys acc
 
 {-
     From a list of paths it return the crossover selection. see previous functions
@@ -185,13 +179,19 @@ selectPairByFloat (x:xs) (y:ys) acc = if (x <= crossoverProbability)
 selectForCrossOver :: [Path] -> IO [(Path, Path)]
 selectForCrossOver [] = return []
 selectForCrossOver xs =
-  let
-    pairs = pathPair xs
-  in
     do
-      r <- randList 0.0 1.0 (length pairs)
+      r <- randList 0.0 1.0 (length xs)
+      r' <- randList 0.0 1.0 (length xs)
+      let selectedPaths = selectPathByFloat r (xs) []
+      let selectedPaths' = selectPathByFloat r' (xs) []
     --  print r
-      return (selectPairByFloat r (pairs) [])
+      return $ filterSimmetric (filter (\(x,y) -> x /= y) (zip selectedPaths selectedPaths')) []
+
+filterSimmetric :: [(Path,Path)] -> [(Path,Path)] -> [(Path,Path)]
+filterSimmetric [] acc = acc
+filterSimmetric ((x,y):xs) acc = if ( (x,y) `notElem` acc && (y,x) `notElem` acc )
+                                    then filterSimmetric xs $ (x,y) : acc
+                                    else filterSimmetric xs acc
 
 {-
     Generate 2 random values between the list length in input
