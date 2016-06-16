@@ -68,11 +68,17 @@ getNodeYCoordinate c x = snd $ getNodeCoordinates c x
 mergeEqualNodes :: [Node] -> [Node] -> [Node]
 mergeEqualNodes [] acc = acc
 mergeEqualNodes (x:xs) acc = if (x `elem` xs)
-                            then equalNodesMerged x xs : acc
-                            else mergeEqualNodes  xs $ x : acc
+                            then mergeEqualNodes (equalNodesCleared x (x:xs) []) $ (equalNodesMerged x xs (snd x)) : acc
+                            else mergeEqualNodes (equalNodesCleared x (x:xs) []) $ x : acc
 
-equalNodesMerged :: Node -> [Node] -> Node
-equalNodesMerged x [] = x
-equalNodesMerged x (y:ys) = if (x == y)
-                               then (fst x, (snd x + snd y))
-                               else equalNodesMerged x ys
+equalNodesMerged :: Node -> [Node] -> Int -> Node
+equalNodesMerged x [] acc = (fst x, acc)
+equalNodesMerged x (y:ys) acc = if (x == y)
+                               then equalNodesMerged x ys (snd y + acc)
+                               else equalNodesMerged x ys acc
+
+equalNodesCleared :: Node -> [Node] -> [Node] -> [Node]
+equalNodesCleared _ [] acc = acc
+equalNodesCleared y (x:xs) acc = if (y == x)
+                                    then equalNodesCleared y xs acc
+                                    else equalNodesCleared y xs $ x : acc
