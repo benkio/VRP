@@ -64,3 +64,15 @@ getNodeXCoordinate c x = fst $ getNodeCoordinates c x
 
 getNodeYCoordinate :: VRPFileContent -> Int -> Int
 getNodeYCoordinate c x = snd $ getNodeCoordinates c x
+
+mergeEqualNodes :: [Node] -> [Node] -> [Node]
+mergeEqualNodes [] acc = acc
+mergeEqualNodes (x:xs) acc = if (x `elem` xs)
+                            then equalNodesMerged x xs : acc
+                            else mergeEqualNodes  xs $ x : acc
+
+equalNodesMerged :: Node -> [Node] -> Node
+equalNodesMerged x [] = x
+equalNodesMerged x (y:ys) = if (x == y)
+                               then (fst x, (snd x + snd y))
+                               else equalNodesMerged x ys

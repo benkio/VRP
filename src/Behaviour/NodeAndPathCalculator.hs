@@ -46,7 +46,8 @@ duplicateCheck (x:xs) = if (x `elem` xs)
 
 -- Check if the given Path is valid or not TRUE IF IS VALID
 validator :: Int -> Path -> Bool
-validator veicleCapacity nodes = (demandIsValid veicleCapacity (map snd nodes)) && nodes/=[] && not (duplicateCheck nodes) && ( head nodes == ((0,0),0) )
+validator _ [] = False
+validator veicleCapacity nodes = (demandIsValid veicleCapacity (map snd nodes)) && not (duplicateCheck nodes) && head nodes == ((0,0),0)
 
 -- Calculate the fitness of a list of paths
 fitness :: [Path] -> [Float]
@@ -65,13 +66,36 @@ fitnessInverse xs =
 -- calculate the total fitness of a population
 totalFitness :: [Path] -> Float
 totalFitness paths = foldr (+) 0 $ fitness $ paths
-
+{-
 selectPath :: [Path] -> Path -> (Path->Path->Bool)-> Path
 selectPath [] x  _= x
 selectPath (x:xs) p f =
     if ( f x p )
     then selectPath xs x f
     else selectPath xs p f
-
+-}
 calcFitness :: Path -> Float
 calcFitness y = calculatePathDistance (map fst y)
+
+maximum' :: Ord t => [(t, a)] -> (t, a)
+maximum' []     = error "maximum of empty list"
+maximum' (x:xs) = maxTail x xs
+  where maxTail currentMax [] = currentMax
+        maxTail (m, n) (p:ps)
+          | m < (fst p) = maxTail p ps
+          | otherwise   = maxTail (m, n) ps
+
+minimum' :: Ord t => [(t, a)] -> (t, a)
+minimum' []     = error "minimum of empty list"
+minimum' (x:xs) = maxTail x xs
+  where maxTail currentMax [] = currentMax
+        maxTail (m, n) (p:ps)
+          | m > (fst p) = maxTail p ps
+          | otherwise   = maxTail (m, n) ps
+
+
+worsePathFun :: [Path] -> Path
+worsePathFun xs = snd $ maximum' $ zip (map (calcFitness) xs) xs
+
+bestPathFun :: [Path] -> Path
+bestPathFun xs = snd $ minimum' $ zip (map (calcFitness) xs) xs

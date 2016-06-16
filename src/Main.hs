@@ -31,20 +31,20 @@ geneticsInit (x:xs) = do
   fileContent <- readSingleFile $ head $ getInstanceFiles $ x
 --  pressKeyToContinue
   let vc = vehiclesCapacity fileContent
-  let n = nodes fileContent
+  let n = mergeEqualNodes (nodes fileContent) []
   print("initial population, Vehicle Capacity: " ++ show vc ++ " nodes: " ++ show n)
   pop <- unwrapRVar $ generateRandomPaths populationNumber [] n vc
 --  prettyPrintPathList pop
 --  pressKeyToContinue
-  best <- unwrapRVar $ generateRandomPath n False [] 0 vc
+  best <- unwrapRVar $ generateRandomPath n False [] vc 
   genetics vc n x pop best 0 0
   geneticsInit xs
 
 
 genetics :: Int -> [Node] -> Int -> [Domain.Path] -> Domain.Path -> Int -> Int -> IO()
-genetics vc nodes gaIstance pop best i iWithSameBest = do
+genetics vc nodes' gaIstance pop best i iWithSameBest = do
   pop <- if (iWithSameBest == thrasholdUntilRandomPop)
-  then (do unwrapRVar $ generateRandomPaths populationNumber [] nodes vc)
+  then (do unwrapRVar $ generateRandomPaths populationNumber [] nodes' vc)
   else return (pop)
   print("montecarlo Selection, population length: " ++ show (length pop))
   m <- montecarlo pop populationNumber
@@ -64,13 +64,13 @@ genetics vc nodes gaIstance pop best i iWithSameBest = do
 --  prettyPrintPathList mutatedPop
 --  pressKeyToContinue
   print("Best Path of this iteration, length newPop: " ++ show (length mutatedPop))
-  let bestPath = selectPath (tail mutatedPop) (head mutatedPop) (\x y -> calcFitness x < calcFitness y)
+  let bestPath = bestPathFun mutatedPop
   print (show bestPath ++ " with fitness of: ")
   print $ calcFitness bestPath
 --  pressKeyToContinue
   case ((calcFitness bestPath < calcFitness best),(i <= iterationNumber)) of
-    (True,True) -> genetics vc nodes gaIstance  mutatedPop bestPath (i+1) 0
-    (False,True) -> genetics vc nodes gaIstance mutatedPop best (i+1) (iWithSameBest+1)
+    (True,True) -> genetics vc nodes' gaIstance  mutatedPop bestPath (i+1) 0
+    (False,True) -> genetics vc nodes' gaIstance mutatedPop best (i+1) (iWithSameBest+1)
     (True, False) -> ( do
                          print ("BEST PATH FOUND BY GENETIC ALGORITHM \n " ++ show bestPath ++ " with fitness of: " ++ show (calcFitness bestPath))
                          renderPretty ("bestGA"++ show gaIstance ++".svg") diagramSize (pathToGraph bestPath))
@@ -81,9 +81,8 @@ genetics vc nodes gaIstance pop best i iWithSameBest = do
 pressKeyToContinue :: IO ()
 pressKeyToContinue =
   do
-    print("press key to continue")
-    getChar
-    return ()
+    print("press key to continue") 
+    getChar >> return ()
 
 prettyPrintPathList :: (Show a) => [a] -> IO ()
 prettyPrintPathList paths =
