@@ -15,8 +15,7 @@ main =
   do
       putStrLn "What Algorithm you want to run?(g - genetics, a - ants)"
       algorithm <- getChar
-      getLine
-      putStrLn "What instances you want to run?(from 0 to 10 separated by space. Eg 0 or 1 2 4 etc)"
+      getLine >> putStrLn "What instances you want to run?(from 0 to 10 separated by space. Eg 0 or 1 2 4 etc)"
       line <- getLine
       case algorithm of
         'g' -> geneticsInit (map read $ words line :: [Int])
@@ -72,10 +71,10 @@ genetics vc nodes' gaIstance pop best i iWithSameBest = do
     (True,True) -> genetics vc nodes' gaIstance  mutatedPop bestPath (i+1) 0
     (False,True) -> genetics vc nodes' gaIstance mutatedPop best (i+1) (iWithSameBest+1)
     (True, False) -> ( do
-                         print ("BEST PATH FOUND BY GENETIC ALGORITHM \n " ++ show bestPath ++ " with fitness of: " ++ show (calcFitness bestPath))
+                         print ("BEST PATH FOUND BY GENETIC ALGORITHM \n " ++ {-show bestPath ++-} " with fitness of: " ++ show (calcFitness bestPath))
                          renderPretty ("bestGA"++ show gaIstance ++".svg") diagramSize (pathToGraph bestPath))
     (False, False) -> ( do
-                          print ("BEST PATH FOUND BY GENETIC ALGORITHM \n " ++ show best ++ " with fitness of: " ++ show (calcFitness best))
+                          print ("BEST PATH FOUND BY GENETIC ALGORITHM \n " ++{- show best ++ -} " with fitness of: " ++ show (calcFitness best))
                           renderPretty ("bestGA"++ show gaIstance ++".svg") diagramSize (pathToGraph best))
 
 pressKeyToContinue :: IO ()

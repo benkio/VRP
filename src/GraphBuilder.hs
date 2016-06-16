@@ -4,10 +4,6 @@ module GraphBuilder where
 
 import Diagrams.Prelude
 import Diagrams.Backend.SVG.CmdLine
-import Diagrams.TwoD.Arrow
-import Diagrams.TwoD.Text
-import Data.List
-import Data.Maybe
 import Domain
 
 {-
