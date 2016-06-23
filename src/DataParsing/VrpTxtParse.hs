@@ -45,22 +45,44 @@ vehiclesCapacity c = readElementFromFile c 0 2
 startingPoint :: VRPFileContent -> Coordinate
 startingPoint c = ((getXCoordinate c 1), (getYCoordinate c 1))
 
-nodes :: VRPFileContent -> [Node]
-nodes c = map (\s -> (((readElementFromLine s xLineIndex), (readElementFromLine s yLineIndex)), (readElementFromLine s demandLineIndex))) l
-        where
-          l = tail $ tail $ lines c
+{-
+    This funcion return the node list.
+    if the vehicle capacity is too low it split che nodes in multiple lists
+-}
+nodes :: VRPFileContent -> Int ->[[Node]]
+nodes c vc = groupNodesByCapacity ( map (\s -> (((readElementFromLine s xLineIndex), (readElementFromLine s yLineIndex)), (readElementFromLine s demandLineIndex))) l) vc
+  where
+    l = tail $ tail $ lines c
 
-getNode :: VRPFileContent -> Int -> Node
-getNode c x = (nodes c) !! x
+groupNodesByCapacity :: [Node] -> Int -> [[Node]]
+groupNodesByCapacity [] _ = []
+groupNodesByCapacity ns vc =
+  let
+    (ns', rest) = takeOneByCapacity ns vc []
+  in
+    if rest /= []
+    then ns' : groupNodesByCapacity rest vc
+    else [ns']
 
-getNodeDemand :: VRPFileContent -> Int -> Demand
-getNodeDemand c x = snd $ getNode c x
 
-getNodeCoordinates :: VRPFileContent -> Int -> Coordinate
-getNodeCoordinates c x = fst $ getNode c x
+takeOneByCapacity :: [Node] -> Int -> [Node] -> ([Node], [Node])
+takeOneByCapacity xs 0 acc = (acc, xs)
+takeOneByCapacity [] _ acc = (acc, [])
+takeOneByCapacity (x:xs) vc acc = if snd x < vc
+                           then takeOneByCapacity xs vc $ x:acc
+                           else takeOneByCapacity (x:xs) 0 acc
 
-getNodeXCoordinate :: VRPFileContent -> Int -> Int
-getNodeXCoordinate c x = fst $ getNodeCoordinates c x
+getNode :: [Node] -> Int -> Node
+getNode ns x = ns !! x
 
-getNodeYCoordinate :: VRPFileContent -> Int -> Int
-getNodeYCoordinate c x = snd $ getNodeCoordinates c x
+getNodeDemand :: [Node] -> Int -> Demand
+getNodeDemand ns x = snd $ getNode ns x
+
+getNodeCoordinates :: [Node] -> Int -> Coordinate
+getNodeCoordinates ns x = fst $ getNode ns x
+
+getNodeXCoordinate :: [Node] -> Int -> Int
+getNodeXCoordinate ns x = fst $ getNodeCoordinates ns x
+
+getNodeYCoordinate :: [Node] -> Int -> Int
+getNodeYCoordinate ns x = snd $ getNodeCoordinates ns x
