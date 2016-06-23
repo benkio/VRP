@@ -66,11 +66,12 @@ groupNodesByCapacity ns vc =
 
 
 takeOneByCapacity :: [Node] -> Int -> [Node] -> ([Node], [Node])
-takeOneByCapacity xs 0 acc = (acc, xs)
 takeOneByCapacity [] _ acc = (acc, [])
-takeOneByCapacity (x:xs) vc acc = if snd x < vc
-                           then takeOneByCapacity xs vc $ x:acc
-                           else takeOneByCapacity (x:xs) 0 acc
+takeOneByCapacity (x:xs) vc acc
+  | vc > 0 = if snd x < vc
+             then takeOneByCapacity xs (vc - snd x) $ x:acc
+             else takeOneByCapacity (x:xs) 0 acc
+  | otherwise =  (acc, xs)
 
 getNode :: [Node] -> Int -> Node
 getNode ns x = ns !! x

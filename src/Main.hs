@@ -17,34 +17,45 @@ main =
       algorithm <- getChar
       getLine
       putStrLn "What instances you want to run?(from 0 to 10 separated by space. Eg 0 or 1 2 4 etc)"
-      line <- getLine
+      l <- getLine
+      let ls = map read $ words l :: [Int]
       case algorithm of
-        'g' -> geneticsInit (map read $ words line :: [Int])
+        'g' -> vrpInit ls startGenetics
         'a' -> error "ants not implemented"
-        otherwise -> main
+        _ -> main
 
-geneticsInit :: [Int] -> IO()
-geneticsInit [] = putStrLn "!!!!!!!!!!!!!!!!!End Genetics!!!!!!!!!!"
-geneticsInit (x:xs) = do
-  print("------------- VRP Genetics---------------------")
+vrpInit :: [Int] -> (Int -> [[Node]] -> Int -> Int -> IO()) -> IO()
+vrpInit [] _ = putStrLn "!!!!!!!!!!!!!!!!!End Computation!!!!!!!!!!"
+vrpInit (x:xs) f = do
+  print("------------- Start Computation---------------------")
   print("Parse input File #" ++ show x)
   fileContent <- readSingleFile $ head $ getInstanceFiles $ x
 --  pressKeyToContinue
   let vc = vehiclesCapacity fileContent
-  let n = nodes fileContent
-  print("initial population, Vehicle Capacity: " ++ show vc ++ " nodes: " ++ show n)
-  pop <- unwrapRVar $ generateRandomPaths populationNumber [] n vc
---  prettyPrintPathList pop
---  pressKeyToContinue
-  best <- unwrapRVar $ generateRandomPath n False [] 0 vc
-  genetics vc n x pop best 0 0
-  geneticsInit xs
+  let n = nodes fileContent vc
+  f x n vc 0 >> vrpInit xs f
 
+startGenetics :: Int -> [[Node]] -> Int -> Int -> IO ()
+startGenetics _ [] _ _ = print("------------- End Genetics---------------------")
+startGenetics x (n:ns) vc i =
+  let
+    y = if i == 0 then show x else (show x) ++ [(['a'..'z'] !! i)]
+  in
+    do
+      print("------------- Start Genetics---------------------")
+      print (show (n:ns))
+      print("initial population, Vehicle Capacity: " ++ show vc ++ " nodes: " ++ show n)
+      pop <- unwrapRVar $ generateRandomPaths populationNumber [] n vc
+  --  prettyPrintPathList pop
+  --  pressKeyToContinue
+      best <- unwrapRVar $ generateRandomPath n False [] 0 vc
+      genetics vc n y pop best 0 0
+      startGenetics x ns vc (i+1)
 
-genetics :: Int -> [Node] -> Int -> [Domain.Path] -> Domain.Path -> Int -> Int -> IO()
-genetics vc nodes gaIstance pop best i iWithSameBest = do
+genetics :: Int -> [Node] -> String -> [Domain.Path] -> Domain.Path -> Int -> Int -> IO()
+genetics vc nodes' gaIstance pop best i iWithSameBest = do
   pop <- if (iWithSameBest == thrasholdUntilRandomPop)
-  then (do unwrapRVar $ generateRandomPaths populationNumber [] nodes vc)
+  then (do unwrapRVar $ generateRandomPaths populationNumber [] nodes' vc)
   else return (pop)
   print("montecarlo Selection, population length: " ++ show (length pop))
   m <- montecarlo pop populationNumber
@@ -69,14 +80,14 @@ genetics vc nodes gaIstance pop best i iWithSameBest = do
   print $ calcFitness bestPath
 --  pressKeyToContinue
   case ((calcFitness bestPath < calcFitness best),(i <= iterationNumber)) of
-    (True,True) -> genetics vc nodes gaIstance  mutatedPop bestPath (i+1) 0
-    (False,True) -> genetics vc nodes gaIstance mutatedPop best (i+1) (iWithSameBest+1)
+    (True,True) -> genetics vc nodes' gaIstance  mutatedPop bestPath (i+1) 0
+    (False,True) -> genetics vc nodes' gaIstance mutatedPop best (i+1) (iWithSameBest+1)
     (True, False) -> ( do
                          print ("BEST PATH FOUND BY GENETIC ALGORITHM \n " ++ show bestPath ++ " with fitness of: " ++ show (calcFitness bestPath))
-                         renderPretty ("bestGA"++ show gaIstance ++".svg") diagramSize (pathToGraph bestPath))
+                         renderPretty ("bestGA"++ gaIstance ++".svg") diagramSize (pathToGraph bestPath))
     (False, False) -> ( do
                           print ("BEST PATH FOUND BY GENETIC ALGORITHM \n " ++ show best ++ " with fitness of: " ++ show (calcFitness best))
-                          renderPretty ("bestGA"++ show gaIstance ++".svg") diagramSize (pathToGraph best))
+                          renderPretty ("bestGA"++ gaIstance ++".svg") diagramSize (pathToGraph best))
 
 pressKeyToContinue :: IO ()
 pressKeyToContinue =
