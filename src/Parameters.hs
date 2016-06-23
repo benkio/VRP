@@ -20,7 +20,7 @@ vrpInstances = [0..10]
     Number of iteration/recursion in the algorithm until termination for every instance.
 -}
 iterationNumber :: Int
-iterationNumber = 1000
+iterationNumber = 10000
 
 {-
     If the number of consecutively iteration where the best result
@@ -28,7 +28,7 @@ iterationNumber = 1000
     will be randomly regenerated.
 -}
 thrasholdUntilRandomPop :: Int
-thrasholdUntilRandomPop = 75
+thrasholdUntilRandomPop = 250
 
 --  Size of the result diagrams
 diagramSize :: SizeSpec V2 Double
@@ -40,7 +40,7 @@ diagramSize = mkWidth 750.0
 
 -- PATH TO SET for the location of the instances.
 filesBasePath :: VRPFilePath
-filesBasePath = "/home/benkio/projects/VRP/files/"
+filesBasePath = "C:/work/VRP/files/"
 
 -- Index of the X coordinate
 xLineIndex :: Int

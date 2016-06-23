@@ -50,9 +50,10 @@ startingPoint c = ((getXCoordinate c 1), (getYCoordinate c 1))
     if the vehicle capacity is too low it split che nodes in multiple lists
 -}
 nodes :: VRPFileContent -> Int ->[[Node]]
-nodes c vc = groupNodesByCapacity ( map (\s -> (((readElementFromLine s xLineIndex), (readElementFromLine s yLineIndex)), (readElementFromLine s demandLineIndex))) l) vc
+nodes c vc = groupNodesByCapacity n vc
   where
     l = tail $ tail $ lines c
+    n =  mergeEqualNodes (map (\s -> (((readElementFromLine s xLineIndex), (readElementFromLine s yLineIndex)), (readElementFromLine s demandLineIndex))) l) []
 
 groupNodesByCapacity :: [Node] -> Int -> [[Node]]
 groupNodesByCapacity [] _ = []
@@ -87,3 +88,21 @@ getNodeXCoordinate ns x = fst $ getNodeCoordinates ns x
 
 getNodeYCoordinate :: [Node] -> Int -> Int
 getNodeYCoordinate ns x = snd $ getNodeCoordinates ns x
+
+mergeEqualNodes :: [Node] -> [Node] -> [Node]
+mergeEqualNodes [] acc = acc
+mergeEqualNodes (x:xs) acc = if (x `elem` xs)
+                            then mergeEqualNodes (equalNodesCleared x (x:xs) []) $ (equalNodesMerged x xs (snd x)) : acc
+                            else mergeEqualNodes (equalNodesCleared x (x:xs) []) $ x : acc
+
+equalNodesMerged :: Node -> [Node] -> Int -> Node
+equalNodesMerged x [] acc = (fst x, acc)
+equalNodesMerged x (y:ys) acc = if (x == y)
+                               then equalNodesMerged x ys (snd y + acc)
+                               else equalNodesMerged x ys acc
+
+equalNodesCleared :: Node -> [Node] -> [Node] -> [Node]
+equalNodesCleared _ [] acc = acc
+equalNodesCleared y (x:xs) acc = if (y == x)
+                                    then equalNodesCleared y xs acc
+                                    else equalNodesCleared y xs $ x : acc

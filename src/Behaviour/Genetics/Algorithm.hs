@@ -47,41 +47,25 @@ getShorterLength xs ys = if (length xs < length ys)
 flattenPathPairList :: [(Path,Path)] -> [Path]
 flattenPathPairList xs = foldr (\(a,b) ys -> ys ++ [a, b]) [] xs
 
+
 {-------------------------------------------------------------------------------------
 
                               POPULATION GENERATION FUNCTIONS
 
 --------------------------------------------------------------------------------------}
 
-
-{-
-    From a list of nodes, the vehicle capacity and a generator funciton of possible paths
-    Return the list of all valid path from that generator.
--}
-generateValidPopulation :: [Node] -> Int -> ([Node] -> [Path]) -> [Path]
-generateValidPopulation nodes veicleCapacity gen = [ b | b <- gen nodes,
-                             -- b <- subsequences a,
-                              validator veicleCapacity b]
-
--- Use the previous parts for the generation of the valid population
-validPopulation :: [Node] -> Int -> [Path]
-validPopulation nodes veicleCapacity = generateValidPopulation nodes veicleCapacity permutations
-
 {-
     Generate a random path. First try a random shuffle sequence of node from the ones in input
     After a 100 recursion calls none is generated the head of the nodes will be removed.
     And all start form the beginning.
 -}
-generateRandomPath :: [Node] -> Bool -> Path -> Int -> Int -> RVar Path
-generateRandomPath _ True finalValue _ _ = return finalValue
-generateRandomPath [] _ _ _ _ = return []
-generateRandomPath nodes False _ n veicleCapacity = if (n==100)
-                                     then
-                                       generateRandomPath (tail nodes) False [] 0 veicleCapacity
-                                     else
-                                       (do
+generateRandomPath :: [Node] -> Bool -> Path -> Int -> RVar Path
+generateRandomPath _ True finalValue _ = return finalValue
+generateRandomPath [] _ _ _ = return []
+generateRandomPath nodes False _ veicleCapacity = do
                                          s <- shuffle nodes
-                                         generateRandomPath nodes (validator veicleCapacity (((0,0),0) : s)) (((0,0),0) : s) (n+1) veicleCapacity)
+                                         let s' = ((0,0),0) : s
+                                         generateRandomPath nodes (validator veicleCapacity s') s' veicleCapacity
 
 {-
     Use the previous function to generate a fixed number of random paths
@@ -91,8 +75,8 @@ generateRandomPath nodes False _ n veicleCapacity = if (n==100)
 generateRandomPaths :: (Eq a, Num a) => a -> [Path] -> [Node] -> Int -> RVar [Path]
 generateRandomPaths 0 acc _ _ = return acc
 generateRandomPaths n acc nodes veicleCapacity = do
-                            v <- generateRandomPath nodes False [] 0 veicleCapacity
-                            if v `elem` acc
+                            v <- generateRandomPath nodes False [] veicleCapacity
+                            if (v `elem` acc)
                             then generateRandomPaths n acc nodes veicleCapacity
                             else generateRandomPaths (n-1) (v:acc) nodes veicleCapacity
 
@@ -256,10 +240,8 @@ substitute (x:xs) p c
 substituteParentWithChild :: [Path] -> Path -> Path -> Int-> [Path]
 substituteParentWithChild xs p c vc
     | (p `elem` xs) && validator vc c = substitute xs p c
-    | validator vc c = substitute xs worseFitnessPath c
+    | validator vc c = substitute xs (worsePathFun xs) c
     | otherwise = xs
-    where
-      worseFitnessPath = (selectPath (tail xs) (head xs) (\x y -> calcFitness x > calcFitness y) )
 
 {-
     Given a population, a list of Parents and a list of Childs substitute them in a new population.

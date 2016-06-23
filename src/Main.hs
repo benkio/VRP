@@ -15,8 +15,7 @@ main =
   do
       putStrLn "What Algorithm you want to run?(g - genetics, a - ants)"
       algorithm <- getChar
-      getLine
-      putStrLn "What instances you want to run?(from 0 to 10 separated by space. Eg 0 or 1 2 4 etc)"
+      getLine >> putStrLn "What instances you want to run?(from 0 to 10 separated by space. Eg 0 or 1 2 4 etc)"
       l <- getLine
       let ls = map read $ words l :: [Int]
       case algorithm of
@@ -48,7 +47,7 @@ startGenetics x (n:ns) vc i =
       pop <- unwrapRVar $ generateRandomPaths populationNumber [] n vc
   --  prettyPrintPathList pop
   --  pressKeyToContinue
-      best <- unwrapRVar $ generateRandomPath n False [] 0 vc
+      best <- unwrapRVar $ generateRandomPath n False [] vc
       genetics vc n y pop best 0 0
       startGenetics x ns vc (i+1)
 
@@ -75,7 +74,7 @@ genetics vc nodes' gaIstance pop best i iWithSameBest = do
 --  prettyPrintPathList mutatedPop
 --  pressKeyToContinue
   print("Best Path of this iteration, length newPop: " ++ show (length mutatedPop))
-  let bestPath = selectPath (tail mutatedPop) (head mutatedPop) (\x y -> calcFitness x < calcFitness y)
+  let bestPath = bestPathFun mutatedPop
   print (show bestPath ++ " with fitness of: ")
   print $ calcFitness bestPath
 --  pressKeyToContinue
@@ -92,9 +91,8 @@ genetics vc nodes' gaIstance pop best i iWithSameBest = do
 pressKeyToContinue :: IO ()
 pressKeyToContinue =
   do
-    print("press key to continue")
-    getChar
-    return ()
+    print("press key to continue") 
+    getChar >> return ()
 
 prettyPrintPathList :: (Show a) => [a] -> IO ()
 prettyPrintPathList paths =
