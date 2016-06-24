@@ -1,11 +1,11 @@
 module Parameters where
 
-{------------------------------
-         Input Parameters
--------------------------------}
-
 import Domain
 import Diagrams.Prelude
+
+{------------------------------
+         Genetics Parameters
+-------------------------------}
 
 -- Number of chromosomes/ants in the algorithms
 -- The limit of the population number is 7!
@@ -26,12 +26,41 @@ iterationNumber = 1000
 thrasholdUntilRandomPop :: Int
 thrasholdUntilRandomPop = 250
 
---  Size of the result diagrams
-diagramSize :: SizeSpec V2 Double
-diagramSize = mkWidth 750.0
+{-
+    Probability todo the crossover
+-}
+crossoverProbability :: Float
+crossoverProbability = 0.6
+
+{-
+    Probability todo the mutation
+-}
+mutationProbability :: Float
+mutationProbability = 0.1
+
+{-----------------------------------------
+    ACO Parameters
+-------------------------------------------}
+
+antNumber :: Int
+antNumber = 10
+
+-- Importance of the attactivity over pheromone trace
+alfa :: Int
+alfa = 1
+
+-- Importance of the pheromone trace over attractivity
+beta :: Int
+beta = 5
+
+evaporationCoefficient :: Float
+evaporationCoefficient = 0.8
+
+initialPheromoneTrace :: Float
+initialPheromoneTrace = 1.0
 
 {-------------------------------
-        TxT Parse Parameters
+        TxT Parse and others Parameters
 ---------------------------------}
 
 -- PATH TO SET for the location of the instances.
@@ -50,12 +79,6 @@ yLineIndex = 1
 demandLineIndex :: Int
 demandLineIndex = 2
 
-{-------------------------------
-        Algorithm Parameters
----------------------------------}
-
-crossoverProbability :: Float
-crossoverProbability = 0.6
-
-mutationProbability :: Float
-mutationProbability = 0.1
+--  Size of the result diagrams
+diagramSize :: SizeSpec V2 Double
+diagramSize = mkWidth 750.0

@@ -23,6 +23,8 @@ executable VRP
                        Domain,
                        Behaviour.NodeAndPathCalculator,
                        Behaviour.Genetics.Algorithm,
+                       Behaviour.ACO.Ant,
+                       Behaviour.ACO.Solver,
                        Parameters,
                        GraphBuilder
   -- other-extensions:
@@ -30,6 +32,7 @@ executable VRP
                        random,
                        random-shuffle,
                        MonadRandom,
+                       mtl,
                        MissingH,
                        diagrams-lib,
                        diagrams-svg,
