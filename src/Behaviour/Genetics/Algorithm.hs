@@ -63,7 +63,6 @@ generateRandomPaths :: (MonadRandom m) => Int -> [Path] -> [Node] -> Int -> m [P
 generateRandomPaths 0 acc _ _ = return acc
 generateRandomPaths n acc nodes veicleCapacity = do
                             v <- generateRandomPath nodes False [] veicleCapacity
-                            print (show v)
                             if (v `elem` acc)
                             then generateRandomPaths n acc nodes veicleCapacity
                             else generateRandomPaths (n-1) (v:acc) nodes veicleCapacity
