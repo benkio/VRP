@@ -27,9 +27,9 @@ executable VRP
                        GraphBuilder
   -- other-extensions:
   build-depends:       base >=4.8 && <4.9,
-                       random-fu,
                        random,
-                       random-extras >=0.19,
+                       random-shuffle,
+                       MonadRandom,
                        MissingH,
                        diagrams-lib,
                        diagrams-svg,

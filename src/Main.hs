@@ -44,17 +44,17 @@ startGenetics x (n:ns) vc i =
       print("------------- Start Genetics---------------------")
       print (show (n:ns))
       print("initial population, Vehicle Capacity: " ++ show vc ++ " nodes: " ++ show n)
-      pop <- unwrapRVar $ generateRandomPaths populationNumber [] n vc
+      pop <- generateRandomPaths populationNumber [] n vc
   --  prettyPrintPathList pop
   --  pressKeyToContinue
-      best <- unwrapRVar $ generateRandomPath n False [] vc
+      best <- generateRandomPath n False [] vc
       genetics vc n y pop best 0 0
       startGenetics x ns vc (i+1)
 
 genetics :: Int -> [Node] -> String -> [Domain.Path] -> Domain.Path -> Int -> Int -> IO()
 genetics vc nodes' gaIstance pop best i iWithSameBest = do
   pop <- if (iWithSameBest == thrasholdUntilRandomPop)
-  then (do unwrapRVar $ generateRandomPaths populationNumber [] nodes' vc)
+  then (do generateRandomPaths populationNumber [] nodes' vc)
   else return (pop)
   print("montecarlo Selection, population length: " ++ show (length pop))
   m <- montecarlo pop populationNumber

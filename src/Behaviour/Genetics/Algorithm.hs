@@ -5,9 +5,9 @@ module Behaviour.Genetics.Algorithm where
 -}
 
 import Domain
-import Data.Random
 import System.Random
-import Data.List
+import System.Random.Shuffle
+import Control.Monad.Random
 import Behaviour.NodeAndPathCalculator
 import Parameters
 
@@ -16,19 +16,6 @@ import Parameters
                                      GENERIC FUNCTIONS
 
 --------------------------------------------------------------------------------------}
-
--- Unwrap the Monad and print return it's content as IO Monad
-unwrapRVar :: RVar a -> IO a
-unwrapRVar a = do
-                b <- runRVar a StdRandom
-                return b
-
--- unwrapRVar and print It
-printRVar :: (Show a) => RVar a -> IO ()
-printRVar a =
-  do
-    b <- unwrapRVar a
-    print b
 
 -- Return a random from min to Max
 rand :: (Random a) => a -> a -> IO a
@@ -59,11 +46,11 @@ flattenPathPairList xs = foldr (\(a,b) ys -> ys ++ [a, b]) [] xs
     After a 100 recursion calls none is generated the head of the nodes will be removed.
     And all start form the beginning.
 -}
-generateRandomPath :: [Node] -> Bool -> Path -> Int -> RVar Path
+generateRandomPath :: (MonadRandom m) => [Node] -> Bool -> Path -> Int -> m Path
 generateRandomPath _ True finalValue _ = return finalValue
 generateRandomPath [] _ _ _ = return []
 generateRandomPath nodes False _ veicleCapacity = do
-                                         s <- shuffle nodes
+                                         s <- shuffleM nodes
                                          let s' = ((0,0),0) : s
                                          generateRandomPath nodes (validator veicleCapacity s') s' veicleCapacity
 
@@ -72,10 +59,11 @@ generateRandomPath nodes False _ veicleCapacity = do
     It tries indefinitely CANNOT RETURN IF THE NUMBER OF PATH CANNOT BE GENERATED.
     the return avoid duplications and empty strings
 -}
-generateRandomPaths :: (Eq a, Num a) => a -> [Path] -> [Node] -> Int -> RVar [Path]
+generateRandomPaths :: (MonadRandom m) => Int -> [Path] -> [Node] -> Int -> m [Path]
 generateRandomPaths 0 acc _ _ = return acc
 generateRandomPaths n acc nodes veicleCapacity = do
                             v <- generateRandomPath nodes False [] veicleCapacity
+                            print (show v)
                             if (v `elem` acc)
                             then generateRandomPaths n acc nodes veicleCapacity
                             else generateRandomPaths (n-1) (v:acc) nodes veicleCapacity
