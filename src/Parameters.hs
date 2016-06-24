@@ -6,15 +6,11 @@ module Parameters where
 
 import Domain
 import Diagrams.Prelude
-import Diagrams.Backend.SVG.CmdLine
 
 -- Number of chromosomes/ants in the algorithms
+-- The limit of the population number is 7!
 populationNumber :: Int
 populationNumber = 200
-
--- List of the instances, eg `vrpnc#.txt`
-vrpInstances :: [Int]
-vrpInstances = [0..10]
 
 {-
     Number of iteration/recursion in the algorithm until termination for every instance.

@@ -48,11 +48,10 @@ flattenPathPairList xs = foldr (\(a,b) ys -> ys ++ [a, b]) [] xs
 -}
 generateRandomPath :: (MonadRandom m) => [Node] -> Bool -> Path -> Int -> m Path
 generateRandomPath _ True finalValue _ = return finalValue
-generateRandomPath [] _ _ _ = return []
-generateRandomPath nodes False _ veicleCapacity = do
-                                         s <- shuffleM nodes
+generateRandomPath ns False _ vc = do
+                                         s <- shuffleM ns
                                          let s' = ((0,0),0) : s
-                                         generateRandomPath nodes (validator veicleCapacity s') s' veicleCapacity
+                                         generateRandomPath ns (validator vc s') s' vc
 
 {-
     Use the previous function to generate a fixed number of random paths
@@ -60,12 +59,20 @@ generateRandomPath nodes False _ veicleCapacity = do
     the return avoid duplications and empty strings
 -}
 generateRandomPaths :: (MonadRandom m) => Int -> [Path] -> [Node] -> Int -> m [Path]
-generateRandomPaths 0 acc _ _ = return acc
-generateRandomPaths n acc nodes veicleCapacity = do
-                            v <- generateRandomPath nodes False [] veicleCapacity
-                            if (v `elem` acc)
-                            then generateRandomPaths n acc nodes veicleCapacity
-                            else generateRandomPaths (n-1) (v:acc) nodes veicleCapacity
+generateRandomPaths n acc ns vc =
+  if (lns <= 7 && lns < (n `div`lns)) -- control the number of permutations are enough
+  then f (product [1..lns]) acc ns vc
+  else
+    f n acc ns vc
+  where
+    lns = length ns
+    f 0 acc' _ _ = return acc'
+    f n' acc' ns' vc' =
+      do
+        v <- generateRandomPath ns' False [] vc'
+        if (v `elem` acc')
+          then f n' acc' ns' vc'
+          else f (n'-1) (v:acc') ns' vc'
 
 {--------------------------------------------------------------------------------------
 
