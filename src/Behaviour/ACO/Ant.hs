@@ -1,9 +1,10 @@
 module Behaviour.ACO.Ant where
 
 import Control.Monad.State
+import Domain
 
 initialTour :: Path
-initialTour = []
+initialTour = [((0,0),0)]
 
 {-
     Starting from: the tour and the node
@@ -11,6 +12,9 @@ initialTour = []
 -}
 visitNode :: Path -> Node -> State () Path
 visitNode t x
-  | x `elem` t  = return t
-  | x `notelem` t = return (x : t)
+  | x `elem` t  = error "node already visited"
+  | x `notElem` t = return (x : t)
+  | otherwise = error "strange problem in a exaustive pattern"
 
+isVisited :: Path -> Node -> Bool
+isVisited xs n = n `elem` xs

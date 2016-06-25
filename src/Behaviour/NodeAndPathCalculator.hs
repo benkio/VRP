@@ -53,11 +53,15 @@ validator veicleCapacity nodes = (demandIsValid veicleCapacity (map snd nodes)) 
 fitness :: [Path] -> [Float]
 fitness paths = map (\x -> calculatePathDistance (map fst x)) paths
 
-fitnessInverse :: [Path] -> [Float]
-fitnessInverse [] = []
-fitnessInverse xs =
+{-
+    Calculate the fitness for every path.
+    If a path have the snd fitness his fitness will be exchanged with the snd worse...etc
+-}
+inverse :: [a] -> ([a] -> [Float]) -> [Float]
+inverse [] _ = []
+inverse xs f =
   let
-    ys = sort $ zip (fitness xs) [0..(length xs)]
+    ys = sort $ zip (f xs) [0..(length xs)]
     zs = reverse ys
     as = map (\((a,_),(_,d)) -> (a,d)) $ zip ys zs
   in
@@ -66,14 +70,7 @@ fitnessInverse xs =
 -- calculate the total fitness of a population
 totalFitness :: [Path] -> Float
 totalFitness paths = foldr (+) 0 $ fitness $ paths
-{-
-selectPath :: [Path] -> Path -> (Path->Path->Bool)-> Path
-selectPath [] x  _= x
-selectPath (x:xs) p f =
-    if ( f x p )
-    then selectPath xs x f
-    else selectPath xs p f
--}
+
 calcFitness :: Path -> Float
 calcFitness y = calculatePathDistance (map fst y)
 

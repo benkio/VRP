@@ -115,7 +115,7 @@ montecarloRages :: [Path] -> Float -> [Float]
 montecarloRages [] _ = []
 montecarloRages paths acc = x : montecarloRages (tail paths) x
                                 where
-                                  x = acc + head (fitnessInverse paths)
+                                  x = acc + head (inverse paths fitness)
 
 {--------------------------------------------------------------------------------------
 

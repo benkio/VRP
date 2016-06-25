@@ -3,28 +3,36 @@ module Main where
 import DataParsing.VrpTxtParse --add to force compilation
 import Behaviour.NodeAndPathCalculator
 import Behaviour.Genetics.Algorithm
+import Behaviour.ACO.Solver
+import Behaviour.ACO.Ant
 import Data.String.Utils
 import Domain
 import Parameters
 import GraphBuilder
-import Diagrams.Prelude
 import Diagrams.Backend.SVG
 
 main :: IO()
 main =
   do
-      putStrLn "What Algorithm you want to run?(g - genetics, a - ants)"
+      putStrLn "What Algorithm you want to run?(g - genetics, a - ants, e - exit)"
       algorithm <- getChar
-      getLine >> putStrLn "What instances you want to run?(from 0 to 10 separated by space. Eg 0 or 1 2 4 etc)"
-      l <- getLine
-      let ls = map read $ words l :: [Int]
+      getLine
       case algorithm of
-        'g' -> vrpInit ls startGenetics
-        'a' -> error "ants not implemented"
+        'g' -> askInstance >>= \xs -> vrpInit xs startGenetics
+        'a' -> askInstance >>= \xs -> vrpInit xs startACO
+        'e' -> print ("goodbye")
         _ -> main
 
+askInstance :: IO [Int]
+askInstance =
+  do
+    putStrLn "What instances you want to run?(from 0 to 10 separated by space. Eg 0 or 1 2 4 etc)"
+    l <- getLine
+    let ls = map read $ words l :: [Int]
+    return ls
+
 vrpInit :: [Int] -> (Int -> [[Node]] -> Int -> Int -> IO()) -> IO()
-vrpInit [] _ = putStrLn "!!!!!!!!!!!!!!!!!End Computation!!!!!!!!!!"
+vrpInit [] _ = putStrLn "!!!!!!!!!!!!!!!!!End Computation!!!!!!!!!!" >> main
 vrpInit (x:xs) f = do
   print("------------- Start Computation---------------------")
   print("Parse input File #" ++ show x)
@@ -88,6 +96,17 @@ genetics vc nodes' gaIstance pop best i iWithSameBest = do
                           print ("BEST PATH FOUND BY GENETIC ALGORITHM \n " ++ show best ++ " with fitness of: " ++ show (calcFitness best))
                           renderPretty ("bestGA"++ gaIstance ++".svg") diagramSize (pathToGraph best))
 
+
+startACO :: Int -> [[Node]] -> Int -> Int -> IO ()
+startACO _ [] _ _ = print("------------- End ACO---------------------")
+startACO x (n:ns) vc i =
+  let
+    y = if i == 0 then show x else (show x) ++ [(['a'..'z'] !! i)]
+  in
+    do
+      print("------------- Start ACO---------------------")
+      print $ startingDataStructure n
+      
 pressKeyToContinue :: IO ()
 pressKeyToContinue =
   do

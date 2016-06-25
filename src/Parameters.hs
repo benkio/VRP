@@ -59,6 +59,7 @@ evaporationCoefficient = 0.8
 initialPheromoneTrace :: Float
 initialPheromoneTrace = 1.0
 
+
 {-------------------------------
         TxT Parse and others Parameters
 ---------------------------------}
