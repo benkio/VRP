@@ -12,6 +12,8 @@ import Data.List
     - all the node pairs
     - the pheromone level for that pair
     - the attactivity, the less distance the higher attractivity (distance inverted between the lowers and the highers)
+
+    The length of this structure is se summation of length of xs
 -}
 startingDataStructure :: [Node] -> [((Node, Node),(Float, Float))]
 startingDataStructure xs = map (\(((a,b),(c,d)),e)  -> ((a,b),(c,e))) $ zip ls zs

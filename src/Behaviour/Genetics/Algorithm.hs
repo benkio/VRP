@@ -83,14 +83,14 @@ generateRandomPaths n acc ns vc =
 {-
      Do a montecarlo selection on the input population and return a new population
 -}
-singleMontecarloExtraction :: Float -> [(Path,Float)] -> IO Path
+singleMontecarloExtraction :: Float -> [(a,Float)] -> IO a
 singleMontecarloExtraction tf ranges =
   do
     r <- rand 0.0 tf
     return $ f r ranges
   where
-    f :: Float -> [(Path,Float)] -> Path
-    f _ [] = []
+    f :: Float -> [(a,Float)] -> a
+    f _ [] = error "single montecarlo extraction, no ranges     "
     f _ (z:[]) = fst z
     f pick (z:zs) =
       if ((snd z) > pick)
@@ -104,18 +104,18 @@ montecarlo :: [Path] -> Int -> IO [Path]
 montecarlo x y = sequence $ f y
                  where
                    tf = totalFitness x
-                   ranges = zip x $ montecarloRages x 0
+                   ranges = zip x $ montecarloRages x (\xs -> inverse xs fitness) 0
                    f 0 = do []
                    f n = singleMontecarloExtraction tf ranges : f (n-1)
 
 {-
     From the input population fitness return a list of ranges from 1 to the total fitness
 -}
-montecarloRages :: [Path] -> Float -> [Float]
-montecarloRages [] _ = []
-montecarloRages paths acc = x : montecarloRages (tail paths) x
+montecarloRages :: [a] -> ([a] -> [Float]) -> Float -> [Float]
+montecarloRages [] _ _ = []
+montecarloRages paths f acc = x : montecarloRages (tail paths) f x
                                 where
-                                  x = acc + head (inverse paths fitness)
+                                  x = acc + head (f paths)
 
 {--------------------------------------------------------------------------------------
 

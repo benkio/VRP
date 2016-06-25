@@ -105,6 +105,7 @@ startACO x (n:ns) vc i =
   in
     do
       print("------------- Start ACO---------------------")
+      print $ length n
       print $ startingDataStructure n
       
 pressKeyToContinue :: IO ()

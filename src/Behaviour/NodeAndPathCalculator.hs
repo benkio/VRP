@@ -69,7 +69,7 @@ inverse xs f =
 
 -- calculate the total fitness of a population
 totalFitness :: [Path] -> Float
-totalFitness paths = foldr (+) 0 $ fitness $ paths
+totalFitness paths = sum $ fitness $ paths
 
 calcFitness :: Path -> Float
 calcFitness y = calculatePathDistance (map fst y)
