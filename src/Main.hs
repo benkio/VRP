@@ -107,6 +107,8 @@ startACO x (n:ns) vc i =
       print("------------- Start ACO---------------------")
       print $ length n
       print $ startingDataStructure n
+      next <- nextToVisit initialTour $ startingDataStructure n
+      print next
       
 pressKeyToContinue :: IO ()
 pressKeyToContinue =

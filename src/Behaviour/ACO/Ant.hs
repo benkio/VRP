@@ -33,7 +33,7 @@ nextToVisit :: Path -> [((Node, Node),(Float, Float))] -> IO Node
 nextToVisit xs ys = singleMontecarloExtraction 1.0 zs''
   where
     lastNode = head $ reverse xs
-    ys' = filter (\((a,b),(_,_)) -> a == lastNode && not (isVisited xs b)) ys
-    zs' = map (\((b,(_,_)),f) -> (b,f)) $ zip (map (\((_,b),(c,d)) -> (b,(c,d))) ys') $ moveToProbability $ map snd ys'
+    ys' = filter (\((a,b),(_,_)) -> (a == lastNode && not (isVisited xs b)) || (b == lastNode && not (isVisited xs a))) ys
+    zs' = map (\(((a,b),(_,_)),f) -> if a == lastNode then (b,f) else (a,f)) $ zip ys' $ moveToProbability $ map snd ys'
     ranges = montecarloRages zs' (map snd) 0
     zs'' = map (\((a,_),c) -> (a,c)) $ zip zs' ranges
