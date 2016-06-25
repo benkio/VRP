@@ -27,3 +27,8 @@ moveToProbability xs = map (\(x,y) -> (f x y)/denominator) xs
   where
     f a b = (a^beta) * (b^alfa)
     denominator = foldr (+) 0 $ map (\(x,y) -> f x y) xs
+
+updatePheromone :: [Path] -> [((Node, Node),(Float, Float))] -> [((Node, Node),(Float, Float))]
+updatePheromone xs ys = map (\(a,(c,d)) -> (a,( (c*evaporationCoefficient) + (fromIntegral (getNodePairFrequency a zs)) ,d))) ys
+  where
+    zs = frequency $ concat $ pairPathNodes xs

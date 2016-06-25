@@ -105,18 +105,20 @@ startACO x (n:ns) vc i =
   in
     do
       print("------------- Start ACO---------------------")
-      ants vc n y 0 []
+      ants vc n y 0 [] $ startingDataStructure n
       startACO x ns vc (i+1)
 
 
-ants :: Int -> [Node] -> String -> Int -> Path ->IO()
-ants vc ns acIstance i best= do
-      print $ length ns
-      print $ startingDataStructure ns
-      bestPath <- buildSolution (startingDataStructure ns) initialTour
+ants :: Int -> [Node] -> String -> Int -> Path -> [((Node, Node),(Float, Float))] -> IO()
+ants vc ns acIstance i best dataStructure = do
+--      print $ length ns
+--      print $ startingDataStructure ns
+      paths <- mapM (\_ -> buildSolution dataStructure initialTour) [1..antNumber]
+      let dataStructureUpdated = updatePheromone paths dataStructure
+      let bestPath = bestPathFun paths
       case ((calcFitness bestPath < calcFitness best),(i <= iterationNumber)) of
-        (True,True)  -> ants vc ns acIstance (i+1) bestPath
-        (False,True) -> ants vc ns acIstance (i+1) best
+        (True,True)  -> ants vc ns acIstance (i+1) bestPath dataStructureUpdated
+        (False,True) -> ants vc ns acIstance (i+1) best dataStructureUpdated
         (True,False) -> ( do
                          print ("BEST PATH FOUND BY ACO ALGORITHM \n " ++ show bestPath ++ " with fitness of: " ++ show (calcFitness bestPath))
                          renderPretty ("bestACO"++ acIstance ++".svg") diagramSize (pathToGraph bestPath))

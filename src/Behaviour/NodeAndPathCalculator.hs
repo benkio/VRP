@@ -97,3 +97,22 @@ worsePathFun xs = snd $ maximum' $ zip (map (calcFitness) xs) xs
 
 bestPathFun :: [Path] -> Path
 bestPathFun xs = snd $ minimum' $ zip (map (calcFitness) xs) xs
+
+pairPathNodes :: [Path] -> [[(Node,Node)]]
+pairPathNodes [] = []
+pairPathNodes (x:xs) = (zip x (tail x)) : pairPathNodes xs
+
+frequency :: Ord a => [a] -> [(Int,a)] 
+frequency list = map (\l -> (length l, head l)) (group (sort list))
+
+getNodePairFrequency :: (Node,Node) -> [(Int,(Node,Node))] -> Int
+getNodePairFrequency a ns =
+  let
+    xs = filter (\(_,b) -> checkNodePairEquality a b) ns
+  in
+    if null xs
+    then 0
+    else fst $ head xs
+
+checkNodePairEquality :: (Node,Node) -> (Node,Node) -> Bool
+checkNodePairEquality (a,b) (y,z) = (a == y && b == z) || (a == z && b == y)

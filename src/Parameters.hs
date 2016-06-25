@@ -56,6 +56,9 @@ beta = 5
 evaporationCoefficient :: Float
 evaporationCoefficient = 0.8
 
+antPheromoneContribution :: Float
+antPheromoneContribution = 0.1
+
 initialPheromoneTrace :: Float
 initialPheromoneTrace = 1.0
 
