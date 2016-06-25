@@ -72,6 +72,7 @@ totalFitness :: [Path] -> Float
 totalFitness paths = sum $ fitness $ paths
 
 calcFitness :: Path -> Float
+calcFitness [] = 10000000000000 -- escamotage for empty paths
 calcFitness y = calculatePathDistance (map fst y)
 
 maximum' :: Ord t => [(t, a)] -> (t, a)

@@ -105,15 +105,29 @@ startACO x (n:ns) vc i =
   in
     do
       print("------------- Start ACO---------------------")
-      print $ length n
-      print $ startingDataStructure n
-      next <- nextToVisit initialTour $ startingDataStructure n
-      print next
-      
+      ants vc n y 0 []
+      startACO x ns vc (i+1)
+
+
+ants :: Int -> [Node] -> String -> Int -> Path ->IO()
+ants vc ns acIstance i best= do
+      print $ length ns
+      print $ startingDataStructure ns
+      bestPath <- buildSolution (startingDataStructure ns) initialTour
+      case ((calcFitness bestPath < calcFitness best),(i <= iterationNumber)) of
+        (True,True)  -> ants vc ns acIstance (i+1) bestPath
+        (False,True) -> ants vc ns acIstance (i+1) best
+        (True,False) -> ( do
+                         print ("BEST PATH FOUND BY ACO ALGORITHM \n " ++ show bestPath ++ " with fitness of: " ++ show (calcFitness bestPath))
+                         renderPretty ("bestACO"++ acIstance ++".svg") diagramSize (pathToGraph bestPath))
+        (False,False)-> ( do
+                          print ("BEST PATH FOUND BY ACO ALGORITHM \n " ++ show best ++ " with fitness of: " ++ show (calcFitness best))
+                          renderPretty ("bestACO"++ acIstance ++".svg") diagramSize (pathToGraph best))
+
 pressKeyToContinue :: IO ()
 pressKeyToContinue =
   do
-    print("press key to continue") 
+    print("press key to continue")
     getChar >> return ()
 
 prettyPrintPathList :: (Show a) => [a] -> IO ()
