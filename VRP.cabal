@@ -32,6 +32,7 @@ executable VRP
                        random,
                        random-shuffle,
                        MonadRandom,
+                       monad-parallel,
                        mtl,
                        MissingH,
                        diagrams-lib,

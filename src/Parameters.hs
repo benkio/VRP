@@ -47,11 +47,11 @@ antNumber = 10
 
 -- Importance of the attactivity over pheromone trace
 alfa :: Int
-alfa = 1
+alfa = 5
 
 -- Importance of the pheromone trace over attractivity
 beta :: Int
-beta = 5
+beta = 2
 
 evaporationCoefficient :: Float
 evaporationCoefficient = 0.8
@@ -84,5 +84,5 @@ demandLineIndex :: Int
 demandLineIndex = 2
 
 --  Size of the result diagrams
-diagramSize :: SizeSpec V2 Double
-diagramSize = mkWidth 750.0
+diagramSize :: Int -> SizeSpec V2 Double
+diagramSize x = mkWidth  $ 700.0 + (2.0 * fromIntegral x)

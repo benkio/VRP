@@ -8,8 +8,11 @@ import Behaviour.ACO.Ant
 import Data.String.Utils
 import Domain
 import Parameters
+import System.IO
 import GraphBuilder
 import Diagrams.Backend.SVG
+import Control.Monad.Parallel as Par
+import Control.Exception
 
 main :: IO()
 main =
@@ -51,7 +54,7 @@ startGenetics x (n:ns) vc i =
     do
       print("------------- Start Genetics---------------------")
       print (show (n:ns))
-      print("initial population, Vehicle Capacity: " ++ show vc ++ " nodes: " ++ show n)
+      -- print("initial population, Vehicle Capacity: " ++ show vc ++ " nodes: " ++ show n)
       pop <- generateRandomPaths populationNumber [] n vc
   --  prettyPrintPathList pop
   --  pressKeyToContinue
@@ -64,37 +67,39 @@ genetics vc nodes' gaIstance pop best i iWithSameBest = do
   pop <- if (iWithSameBest == thrasholdUntilRandomPop)
   then (do generateRandomPaths populationNumber [] nodes' vc)
   else return (pop)
-  print("montecarlo Selection, population length: " ++ show (length pop))
+  -- print("montecarlo Selection, population totalFitness: " ++ show (totalFitness pop))
   m <- montecarlo pop populationNumber
 --  prettyPrintPathList m
 --  pressKeyToContinue
-  print("crossover: random esctraction and parent selection, montecarlo selection length: " ++ show (length m))
+  -- print("crossover: random esctraction and parent selection, montecarlo selection totalFitness: " ++ show (totalFitness m))
   parent <- selectForCrossOver m
 --  prettyPrintPathPairs parent
 --  pressKeyToContinue
-  print("crossover: child Generation, new population, parent length: " ++ show (length parent) )
-  childs <- mapM (\x -> crossoverTwoPath x) parent
+  -- print("crossover: child Generation, new population, parent length: " ++ show (length parent) )
+  childs <- Par.mapM (\x -> crossoverTwoPath x) parent
 --  prettyPrintPathList $ substituteParentWithChild' m parent childs vc
 --  prettyPrintPathList $ filter (\x -> validator (vehiclesCapacity fileContent) x) $ m ++ ( flattenPathPairList ( childs ))
 --  pressKeyToContinue
-  print("Apply Mutation, child length: " ++ show (length childs))
+  -- print("Apply Mutation, child length: " ++ show (length childs))
   mutatedPop <- applyMutation $ substituteParentWithChild' m parent childs vc
---  prettyPrintPathList mutatedPop
+  let mutatedPop' = replaceWorseWithBest best mutatedPop
+--  prettyPrintPathList mutatedPop'
 --  pressKeyToContinue
-  print("Best Path of this iteration, length newPop: " ++ show (length mutatedPop))
-  let bestPath = bestPathFun mutatedPop
-  print (show bestPath ++ " with fitness of: ")
-  print $ calcFitness bestPath
+--  print("Best Path of this iteration, length newPop: " ++ show (length mutatedPop'))
+  let bestPath = bestPathFun mutatedPop'
+--  print (show bestPath ++ " with fitness of: ")
+--  print $ calcFitness bestPath
 --  pressKeyToContinue
+  if (i `mod` 50 == 0) then putStr (show i ++ "..") >> hFlush stdout else return ()
   case ((calcFitness bestPath < calcFitness best),(i <= iterationNumber)) of
-    (True,True) -> genetics vc nodes' gaIstance  mutatedPop bestPath (i+1) 0
-    (False,True) -> genetics vc nodes' gaIstance mutatedPop best (i+1) (iWithSameBest+1)
+    (True,True) -> genetics vc nodes' gaIstance  mutatedPop' bestPath (i+1) 0
+    (False,True) -> genetics vc nodes' gaIstance mutatedPop' best (i+1) (iWithSameBest+1)
     (True, False) -> ( do
                          print ("BEST PATH FOUND BY GENETIC ALGORITHM \n " ++ show bestPath ++ " with fitness of: " ++ show (calcFitness bestPath))
-                         renderPretty ("bestGA"++ gaIstance ++".svg") diagramSize (pathToGraph bestPath))
+                         catch (renderPretty ("bestGA"++ gaIstance ++".svg") (diagramSize (length bestPath)) (pathToGraph bestPath)) handleDiagramExceptions)
     (False, False) -> ( do
                           print ("BEST PATH FOUND BY GENETIC ALGORITHM \n " ++ show best ++ " with fitness of: " ++ show (calcFitness best))
-                          renderPretty ("bestGA"++ gaIstance ++".svg") diagramSize (pathToGraph best))
+                          catch (renderPretty ("bestGA"++ gaIstance ++".svg") (diagramSize (length best)) (pathToGraph best)) handleDiagramExceptions)
 
 
 startACO :: Int -> [[Node]] -> Int -> Int -> IO ()
@@ -105,26 +110,31 @@ startACO x (n:ns) vc i =
   in
     do
       print("------------- Start ACO---------------------")
-      ants vc n y 0 [] $ startingDataStructure n
+      ants vc n y 0 0 [] $ startingDataStructure n
       startACO x ns vc (i+1)
 
 
-ants :: Int -> [Node] -> String -> Int -> Path -> [((Node, Node),(Float, Float))] -> IO()
-ants vc ns acIstance i best dataStructure = do
+ants :: Int -> [Node] -> String -> Int -> Int -> Path -> [((Node, Node),(Float, Float))] -> IO()
+ants vc ns acIstance i iWithSameBest best dataStructure = do
 --      print $ length ns
 --      print $ startingDataStructure ns
-      paths <- mapM (\_ -> buildSolution dataStructure initialTour) [1..antNumber]
+      paths <- Par.mapM (\_ -> buildSolution dataStructure initialTour) [1..antNumber]
       let dataStructureUpdated = updatePheromone paths dataStructure
       let bestPath = bestPathFun paths
+      --print (show bestPath ++ " with fitness of: ")
+      --print $ calcFitness bestPath
+      if (i `mod` 50 == 0) then putStr (show i ++ "..") >> hFlush stdout else return ()
       case ((calcFitness bestPath < calcFitness best),(i <= iterationNumber)) of
-        (True,True)  -> ants vc ns acIstance (i+1) bestPath dataStructureUpdated
-        (False,True) -> ants vc ns acIstance (i+1) best dataStructureUpdated
+        (True,True)  -> ants vc ns acIstance (i+1) 0 bestPath dataStructureUpdated
+        (False,True) -> ants vc ns acIstance (i+1) (iWithSameBest+1) best (checkSameBest iWithSameBest dataStructureUpdated)
         (True,False) -> ( do
                          print ("BEST PATH FOUND BY ACO ALGORITHM \n " ++ show bestPath ++ " with fitness of: " ++ show (calcFitness bestPath))
-                         renderPretty ("bestACO"++ acIstance ++".svg") diagramSize (pathToGraph bestPath))
+                         catch (renderPretty ("bestACO"++ acIstance ++".svg") (diagramSize (length bestPath)) (pathToGraph bestPath)) handleDiagramExceptions)
         (False,False)-> ( do
                           print ("BEST PATH FOUND BY ACO ALGORITHM \n " ++ show best ++ " with fitness of: " ++ show (calcFitness best))
-                          renderPretty ("bestACO"++ acIstance ++".svg") diagramSize (pathToGraph best))
+                          catch  (renderPretty ("bestACO"++ acIstance ++".svg") (diagramSize (length best)) (pathToGraph best)) handleDiagramExceptions)
+       where
+         checkSameBest x d = if (x == thrasholdUntilRandomPop) then  (startingDataStructure ns) else d
 
 pressKeyToContinue :: IO ()
 pressKeyToContinue =
@@ -152,3 +162,7 @@ prettyPrintPathPairs paths =
         replace "])]" "\n    ]\n  )\n]" (
             replace "],[" "],\n    [" (
                 replace "]),([" "]\n  ),\n  (\n    [" input ))))
+
+
+handleDiagramExceptions :: SomeException -> IO ()
+handleDiagramExceptions _ = print "the generation of the graph throw an exception :("

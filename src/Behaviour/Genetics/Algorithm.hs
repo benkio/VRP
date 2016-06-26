@@ -211,8 +211,9 @@ crossoverTwoPath (x,y) =
       (r1,r2) <- generateTwoPointCrossoverIndices (getShorterLength x y)
 {-      print r1
       print r2  -}
-      return (injectSubList x y r1 r2, injectSubList y x r1 r2)
-
+      let (a,b) = (injectSubList x y r1 r2, injectSubList y x r1 r2)
+      --if calcFitness a < calcFitness x || calcFitness b < calcFitness y then return (a,b) else crossoverTwoPath (x,y)
+      return (a,b)
 {-
     Substitute a single path to che population
     1 - population
@@ -233,7 +234,7 @@ substitute (x:xs) p c
 -}
 substituteParentWithChild :: [Path] -> Path -> Path -> Int-> [Path]
 substituteParentWithChild xs p c vc
-    | (p `elem` xs) && validator vc c = substitute xs p c
+    | (p `elem` xs) && validator vc c && calcFitness c < calcFitness p = substitute xs p c
     | validator vc c = substitute xs (worsePathFun xs) c
     | otherwise = xs
 
@@ -249,6 +250,9 @@ substituteParentWithChild' xs ((a,b):ys) ((c,d):zs) vc =
     s2 = substituteParentWithChild s1 b d vc
   in
     substituteParentWithChild' s2 ys zs vc
+
+replaceWorseWithBest :: Path -> [Path] -> [Path]
+replaceWorseWithBest best xs = substitute xs (worsePathFun xs) best
 
 {----------------------------------------------------------------------------
 
