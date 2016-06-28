@@ -69,7 +69,7 @@ initialPheromoneTrace = 1.0
 
 -- PATH TO SET for the location of the instances.
 filesBasePath :: VRPFilePath
-filesBasePath = "/home/benkio/projects/VRP/files/"
+filesBasePath = "C:/temp/"
 
 -- Index of the X coordinate
 xLineIndex :: Int
